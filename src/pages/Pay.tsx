@@ -1,21 +1,23 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scan, X, CheckCircle2 } from 'lucide-react';
+import { Scan, X, CheckCircle2, Moon, Sun } from 'lucide-react';
 import ContactCard from '../components/ContactCard';
+import UpiPinInput from '../components/UpiPinInput';
 import { useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from 'next-themes';
 
 const Pay = () => {
   const location = useLocation();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const [scanActive, setScanActive] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [selectedContact, setSelectedContact] = useState<{name: string, upiId: string} | null>(null);
+  const [showPinInput, setShowPinInput] = useState(false);
 
-  // Check if there's contact info in the location state
   useEffect(() => {
     if (location.state?.contactName && location.state?.upiId) {
       setSelectedContact({
@@ -30,7 +32,6 @@ const Pay = () => {
     }
   }, [location.state]);
 
-  // Mock contact data
   const contacts = [
     { id: 1, name: 'Rahul Sharma', upiId: 'rahul@okaxis' },
     { id: 2, name: 'Priya Mehta', upiId: 'priya@okicici' },
@@ -39,18 +40,19 @@ const Pay = () => {
     { id: 5, name: 'Suresh Kumar', upiId: 'suresh@okicici' }
   ];
 
-  // Function to simulate payment process
   const processPayment = () => {
     if (!paymentAmount) return;
-    
+    setShowPinInput(true);
+  };
+
+  const handlePinSubmit = (pin: string) => {
+    setShowPinInput(false);
     setIsProcessing(true);
     
-    // Simulate payment processing delay
     setTimeout(() => {
       setIsProcessing(false);
       setPaymentComplete(true);
       
-      // Reset after showing success
       setTimeout(() => {
         setPaymentComplete(false);
         setPaymentAmount('');
@@ -60,7 +62,6 @@ const Pay = () => {
     }, 1500);
   };
 
-  // Animation variants
   const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 }
@@ -83,7 +84,17 @@ const Pay = () => {
   return (
     <div className="section pt-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold">Pay</h1>
+        <h1 className="text-xl font-bold dark:text-white">Pay</h1>
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-5 h-5 text-yellow-500" />
+          ) : (
+            <Moon className="w-5 h-5" />
+          )}
+        </button>
       </div>
 
       <motion.div
@@ -172,7 +183,6 @@ const Pay = () => {
         </div>
       </div>
 
-      {/* QR Scanner Modal */}
       <AnimatePresence>
         {scanActive && (
           <motion.div
@@ -213,7 +223,32 @@ const Pay = () => {
         )}
       </AnimatePresence>
 
-      {/* Payment Success Modal */}
+      <AnimatePresence>
+        {showPinInput && (
+          <motion.div
+            variants={overlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center"
+          >
+            <motion.div
+              variants={scannerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm m-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <UpiPinInput
+                onSubmit={handlePinSubmit}
+                onCancel={() => setShowPinInput(false)}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {paymentComplete && (
           <motion.div
