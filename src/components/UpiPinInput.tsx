@@ -35,7 +35,7 @@ const UpiPinInput: React.FC<UpiPinInputProps> = ({ onSubmit, onCancel }) => {
         render={({ slots }) => (
           <InputOTPGroup>
             {slots.map((slot, index) => (
-              <InputOTPSlot key={index} {...slot} className="w-12 h-12" />
+              <InputOTPSlot key={index} {...slot} index={index} className="w-12 h-12" />
             ))}
           </InputOTPGroup>
         )}
