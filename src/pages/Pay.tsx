@@ -1,14 +1,34 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scan, X, CheckCircle2 } from 'lucide-react';
 import ContactCard from '../components/ContactCard';
+import { useLocation } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast";
 
 const Pay = () => {
+  const location = useLocation();
+  const { toast } = useToast();
   const [scanActive, setScanActive] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [selectedContact, setSelectedContact] = useState<{name: string, upiId: string} | null>(null);
+
+  // Check if there's contact info in the location state
+  useEffect(() => {
+    if (location.state?.contactName && location.state?.upiId) {
+      setSelectedContact({
+        name: location.state.contactName,
+        upiId: location.state.upiId
+      });
+      
+      toast({
+        title: "Contact selected",
+        description: `Ready to pay ${location.state.contactName}`
+      });
+    }
+  }, [location.state]);
 
   // Mock contact data
   const contacts = [
@@ -35,6 +55,7 @@ const Pay = () => {
         setPaymentComplete(false);
         setPaymentAmount('');
         setScanActive(false);
+        setSelectedContact(null);
       }, 2000);
     }, 1500);
   };
@@ -71,10 +92,32 @@ const Pay = () => {
         transition={{ duration: 0.5 }}
         className="glass-card rounded-2xl p-6 mb-6 flex flex-col items-center"
       >
-        <div className="text-center mb-4">
-          <h2 className="text-lg font-semibold mb-1">Quick Pay</h2>
-          <p className="text-gray-500 text-sm">Scan or enter amount to pay</p>
-        </div>
+        {selectedContact ? (
+          <div className="w-full mb-4 p-3 bg-blue-50 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 text-blue-600">
+                  {selectedContact.name.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-medium">{selectedContact.name}</p>
+                  <p className="text-xs text-gray-500">{selectedContact.upiId}</p>
+                </div>
+              </div>
+              <button 
+                className="text-gray-400 hover:text-gray-600"
+                onClick={() => setSelectedContact(null)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center mb-4">
+            <h2 className="text-lg font-semibold mb-1">Quick Pay</h2>
+            <p className="text-gray-500 text-sm">Scan or enter amount to pay</p>
+          </div>
+        )}
 
         <div className="w-full">
           <div className="relative mb-6">
@@ -200,6 +243,7 @@ const Pay = () => {
               <h3 className="font-bold text-xl mb-2">Payment Successful!</h3>
               <p className="text-gray-500 mb-4">
                 Your payment of {paymentAmount} has been processed successfully.
+                {selectedContact && ` to ${selectedContact.name}`}
               </p>
               
               <motion.button

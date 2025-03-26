@@ -1,12 +1,22 @@
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import BalanceCard from '../components/BalanceCard';
 import ActionButton from '../components/ActionButton';
 import TransactionCard from '../components/TransactionCard';
+import ScanModal from '../components/ScanModal';
+import ContactsModal from '../components/ContactsModal';
 import { Send, Smartphone, Users, QrCode, RefreshCw } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const Home = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [scanModalOpen, setScanModalOpen] = useState(false);
+  const [scanType, setScanType] = useState<'qr' | 'mobile'>('qr');
+  const [contactsModalOpen, setContactsModalOpen] = useState(false);
+
   // Simulate recent transactions data
   const recentTransactions = [
     { 
@@ -63,6 +73,39 @@ const Home = () => {
     }
   };
 
+  const handleSendMoney = () => {
+    navigate('/pay');
+  };
+
+  const handleScanQR = () => {
+    setScanType('qr');
+    setScanModalOpen(true);
+  };
+
+  const handleScanMobile = () => {
+    setScanType('mobile');
+    setScanModalOpen(true);
+  };
+
+  const handleOpenContacts = () => {
+    setContactsModalOpen(true);
+  };
+
+  const handleRefresh = () => {
+    toast({
+      title: "Refreshing...",
+      description: "Updating your recent transactions"
+    });
+    
+    // Simulate refresh delay
+    setTimeout(() => {
+      toast({
+        title: "Refreshed",
+        description: "Your transactions are up to date"
+      });
+    }, 1500);
+  };
+
   return (
     <div className="section pt-8">
       <div className="flex items-center justify-between mb-6">
@@ -106,31 +149,38 @@ const Home = () => {
           <ActionButton 
             icon={<Send size={20} className="text-blue-500" />} 
             label="Send" 
+            onClick={handleSendMoney}
           />
         </motion.div>
         <motion.div variants={itemVariants}>
           <ActionButton 
             icon={<QrCode size={20} className="text-blue-500" />} 
             label="Scan" 
+            onClick={handleScanQR}
           />
         </motion.div>
         <motion.div variants={itemVariants}>
           <ActionButton 
             icon={<Smartphone size={20} className="text-blue-500" />} 
             label="Mobile" 
+            onClick={handleScanMobile}
           />
         </motion.div>
         <motion.div variants={itemVariants}>
           <ActionButton 
             icon={<Users size={20} className="text-blue-500" />} 
             label="Contacts" 
+            onClick={handleOpenContacts}
           />
         </motion.div>
       </motion.div>
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-bold text-base">Recent Transactions</h2>
-        <button className="text-primary text-sm font-medium flex items-center">
+        <button 
+          className="text-primary text-sm font-medium flex items-center"
+          onClick={handleRefresh}
+        >
           <RefreshCw size={14} className="mr-1" /> Refresh
         </button>
       </div>
@@ -151,6 +201,27 @@ const Home = () => {
           </motion.div>
         ))}
       </motion.div>
+
+      {/* Modal for QR/Mobile scanning */}
+      <AnimatePresence>
+        {scanModalOpen && (
+          <ScanModal 
+            isOpen={scanModalOpen} 
+            onClose={() => setScanModalOpen(false)} 
+            scanType={scanType}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal for Contacts */}
+      <AnimatePresence>
+        {contactsModalOpen && (
+          <ContactsModal 
+            isOpen={contactsModalOpen} 
+            onClose={() => setContactsModalOpen(false)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
