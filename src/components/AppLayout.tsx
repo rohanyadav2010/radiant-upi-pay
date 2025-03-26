@@ -4,13 +4,18 @@ import { Outlet } from 'react-router-dom';
 import BottomNav from './BottomNav';
 import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ThemeToggle } from './theme-toggle';
 
 const AppLayout = () => {
   const location = useLocation();
   
   return (
     <div className="app-container relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white -z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 -z-10"></div>
+      
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       
       <AnimatePresence mode="wait">
         <motion.div
