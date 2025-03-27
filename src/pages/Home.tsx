@@ -213,14 +213,14 @@ const Home = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold"
+          className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold"
         >
           KY
         </motion.div>
       </div>
 
       <div className="flex justify-center mb-4">
-        <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
+        <img src="/phonepe-logo.png" alt="PhonePe" className="h-10" />
       </div>
 
       <BalanceCard 
@@ -325,7 +325,7 @@ const Home = () => {
                 </button>
                 <button 
                   onClick={handleMobileInputSubmit}
-                  className="flex-1 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium"
+                  className="flex-1 py-3 px-4 rounded-xl bg-purple-600 text-white font-medium"
                   disabled={mobileNumber.length !== 10}
                 >
                   Continue
@@ -356,11 +356,11 @@ const Home = () => {
               className="bg-white dark:bg-gray-800 rounded-2xl p-6 m-4 w-full max-w-sm"
             >
               <div className="flex justify-center mb-4">
-                <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
+                <img src="/phonepe-logo.png" alt="PhonePe" className="h-10" />
               </div>
               
               <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-2 text-blue-500 dark:text-blue-400">
+                <div className="w-16 h-16 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mb-2 text-purple-500 dark:text-purple-400">
                   {currentService.icon}
                 </div>
               </div>
@@ -376,7 +376,7 @@ const Home = () => {
                     value={serviceAmount}
                     onChange={(e) => setServiceAmount(e.target.value)}
                     placeholder="0"
-                    className="w-full pl-8 py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-lg font-bold"
+                    className="w-full pl-8 py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors text-lg font-bold"
                   />
                 </div>
               </div>
@@ -393,7 +393,7 @@ const Home = () => {
                 </button>
                 <button 
                   onClick={handleServicePayment}
-                  className="flex-1 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium"
+                  className="flex-1 py-3 px-4 rounded-xl bg-purple-600 text-white font-medium"
                   disabled={!serviceAmount || parseInt(serviceAmount) <= 0}
                 >
                   Pay

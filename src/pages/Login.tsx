@@ -34,7 +34,7 @@ const Login = () => {
       
       toast({
         title: "Login Successful",
-        description: "Welcome to PayPal",
+        description: "Welcome to PhonePe",
       });
       
       navigate('/');
@@ -51,13 +51,13 @@ const Login = () => {
       >
         <div className="text-center mb-8">
           <img
-            src="/paypal-logo.png"
-            alt="PayPal"
-            className="h-12 mx-auto mb-6"
+            src="/phonepe-logo.png"
+            alt="PhonePe"
+            className="h-16 mx-auto mb-6"
           />
           <h2 className="text-2xl font-bold dark:text-white mb-2">Welcome Back</h2>
           <p className="text-gray-500 dark:text-gray-400">
-            Login to access your PayPal account
+            Login to access your PhonePe account
           </p>
         </div>
 
@@ -74,7 +74,7 @@ const Login = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full py-3 pl-10 pr-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full py-3 pl-10 pr-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Enter your username or email"
               />
             </div>
@@ -92,7 +92,7 @@ const Login = () => {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full py-3 pl-10 pr-10 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full py-3 pl-10 pr-10 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Enter your password"
               />
               <button
@@ -110,7 +110,7 @@ const Login = () => {
               <input
                 id="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                className="h-4 w-4 text-purple-500 border-gray-300 rounded focus:ring-purple-500"
               />
               <label
                 htmlFor="remember-me"
@@ -121,7 +121,7 @@ const Login = () => {
             </div>
             <a
               href="#"
-              className="text-sm font-medium text-blue-500 hover:text-blue-600"
+              className="text-sm font-medium text-purple-500 hover:text-purple-600"
             >
               Forgot password?
             </a>
@@ -132,8 +132,8 @@ const Login = () => {
             disabled={isLoading}
             className={`w-full py-3 rounded-xl text-white font-medium ${
               isLoading
-                ? "bg-blue-400 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600"
+                ? "bg-purple-400 cursor-not-allowed"
+                : "bg-purple-600 hover:bg-purple-700"
             }`}
           >
             {isLoading ? "Logging in..." : "Log in"}
@@ -143,7 +143,7 @@ const Login = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             Don't have an account?{" "}
-            <a href="#" className="text-blue-500 font-medium">
+            <a href="#" className="text-purple-500 font-medium">
               Sign up
             </a>
           </p>

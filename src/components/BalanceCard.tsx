@@ -183,10 +183,10 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
             className="bg-white dark:bg-gray-800 rounded-2xl p-6 m-4 w-full max-w-sm"
           >
             <div className="flex items-center justify-center mb-4">
-              <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
+              <img src="/phonepe-logo.png" alt="PhonePe" className="h-10" />
             </div>
             <h3 className="font-bold text-xl mb-2 dark:text-white text-center">Add Money</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-center mb-4">Enter amount to add to your PayPal account</p>
+            <p className="text-gray-500 dark:text-gray-400 text-center mb-4">Enter amount to add to your PhonePe account</p>
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sender Name (Optional)</label>
@@ -195,7 +195,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
                 value={senderName}
                 onChange={(e) => setSenderName(e.target.value)}
                 placeholder="Enter sender name"
-                className="w-full py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="w-full py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
               />
             </div>
             
@@ -208,7 +208,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
                   value={amountInput}
                   onChange={(e) => setAmountInput(e.target.value)}
                   placeholder="0"
-                  className="w-full pl-8 py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-lg font-bold"
+                  className="w-full pl-8 py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors text-lg font-bold"
                 />
               </div>
             </div>
@@ -222,7 +222,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
               </button>
               <button 
                 onClick={processAddMoney}
-                className="flex-1 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium"
+                className="flex-1 py-3 px-4 rounded-xl bg-purple-600 text-white font-medium"
               >
                 Add
               </button>
@@ -242,10 +242,10 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
             className="bg-white dark:bg-gray-800 rounded-2xl p-6 m-4 w-full max-w-sm"
           >
             <div className="flex items-center justify-center mb-4">
-              <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
+              <img src="/phonepe-logo.png" alt="PhonePe" className="h-10" />
             </div>
             <h3 className="font-bold text-xl mb-2 dark:text-white text-center">Withdraw Money</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-center mb-4">Enter amount to withdraw from your PayPal account</p>
+            <p className="text-gray-500 dark:text-gray-400 text-center mb-4">Enter amount to withdraw from your PhonePe account</p>
             
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
@@ -256,7 +256,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
                   value={amountInput}
                   onChange={(e) => setAmountInput(e.target.value)}
                   placeholder="0"
-                  className="w-full pl-8 py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-lg font-bold"
+                  className="w-full pl-8 py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors text-lg font-bold"
                 />
               </div>
             </div>
@@ -270,7 +270,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
               </button>
               <button 
                 onClick={processWithdraw}
-                className="flex-1 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium"
+                className="flex-1 py-3 px-4 rounded-xl bg-purple-600 text-white font-medium"
               >
                 Withdraw
               </button>
