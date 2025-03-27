@@ -1,22 +1,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scan, X, CheckCircle2, Moon, Sun, Plus, User } from 'lucide-react';
+import { Scan, X, CheckCircle2, Plus, User } from 'lucide-react';
 import ContactCard from '../components/ContactCard';
 import UpiPinInput from '../components/UpiPinInput';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { addTransaction, getContacts } from '@/store/TransactionStore';
 import ScanModal from '../components/ScanModal';
+import { getGlobalBalance, setGlobalBalance, formatIndianCurrency } from '../components/BalanceCard';
 
 const Pay = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { theme, setTheme } = useTheme();
   
   const [scanActive, setScanActive] = useState(false);
   const [scanType, setScanType] = useState<'qr' | 'mobile'>('qr');
@@ -45,6 +44,17 @@ const Pay = () => {
         description: `Ready to pay ${location.state.contactName}`
       });
     }
+    
+    // Handle direct UPI input if passed from another component
+    if (location.state?.directUpiInput) {
+      setDirectUpiInput(location.state.directUpiInput);
+      if (location.state?.directNameInput) {
+        setDirectNameInput(location.state.directNameInput);
+      }
+      if (location.state?.showDirectInput) {
+        setShowDirectInput(true);
+      }
+    }
   }, [location.state]);
 
   const processPayment = () => {
@@ -58,7 +68,21 @@ const Pay = () => {
     
     setTimeout(() => {
       setIsProcessing(false);
-      setPaymentComplete(true);
+      
+      // Deduct the amount from the balance
+      const amount = parseInt(paymentAmount);
+      if (!isNaN(amount)) {
+        const currentBalance = getGlobalBalance();
+        if (amount > currentBalance) {
+          toast({
+            title: "Insufficient balance",
+            description: "You don't have enough balance for this transaction"
+          });
+          return;
+        }
+        
+        setGlobalBalance(currentBalance - amount);
+      }
       
       if (selectedContact) {
         // Save transaction with selected contact
@@ -73,17 +97,9 @@ const Pay = () => {
         addTransaction(name, directUpiInput, paymentAmount);
       }
       
-      setTimeout(() => {
-        setPaymentComplete(false);
-        setPaymentAmount('');
-        setScanActive(false);
-        setSelectedContact(null);
-        setDirectUpiInput('');
-        setDirectNameInput('');
-        setShowDirectInput(false);
-        // Refresh contacts after transaction
-        setContacts(getContacts());
-      }, 2000);
+      // Show payment complete modal
+      setPaymentComplete(true);
+      // No auto-close timer here since we want the user to press Done
     }, 1500);
   };
 
@@ -140,20 +156,26 @@ const Pay = () => {
     }
   };
 
+  const handlePaymentComplete = () => {
+    setPaymentComplete(false);
+    setPaymentAmount('');
+    setScanActive(false);
+    setSelectedContact(null);
+    setDirectUpiInput('');
+    setDirectNameInput('');
+    setShowDirectInput(false);
+    
+    // Refresh contacts after transaction
+    setContacts(getContacts());
+    
+    // Navigate back to home
+    navigate('/');
+  };
+
   return (
     <div className="section pt-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold dark:text-white">Pay</h1>
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          {theme === 'dark' ? (
-            <Sun className="w-5 h-5 text-yellow-500" />
-          ) : (
-            <Moon className="w-5 h-5" />
-          )}
-        </button>
       </div>
 
       <motion.div
@@ -208,6 +230,9 @@ const Pay = () => {
           </div>
         ) : (
           <div className="text-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-3">
+              <User size={30} className="text-blue-600 dark:text-blue-400" />
+            </div>
             <h2 className="text-lg font-semibold mb-1 dark:text-white">Quick Pay</h2>
             <p className="text-gray-500 dark:text-gray-400 text-sm">Scan or enter amount to pay</p>
           </div>
@@ -344,28 +369,33 @@ const Pay = () => {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-white rounded-2xl p-5 m-4 w-full max-w-sm text-center"
+              className="bg-white dark:bg-gray-800 rounded-2xl p-5 m-4 w-full max-w-sm text-center"
             >
-              <div className="mb-4 flex justify-center">
+              <div className="mb-6 flex justify-center">
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
                 >
-                  <CheckCircle2 size={60} className="text-green-500" />
+                  <CheckCircle2 size={50} className="text-green-500 dark:text-green-400" />
                 </motion.div>
               </div>
               
-              <h3 className="font-bold text-xl mb-2">Payment Successful!</h3>
-              <p className="text-gray-500 mb-4">
-                Your payment of {paymentAmount} has been processed successfully.
-                {selectedContact && ` to ${selectedContact.name}`}
+              <h3 className="font-bold text-xl mb-2 dark:text-white">Payment Successful!</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-2 text-lg font-semibold">
+                {formatIndianCurrency(parseInt(paymentAmount))}
+              </p>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
+                {selectedContact ? `to ${selectedContact.name}` : 
+                 directNameInput ? `to ${directNameInput}` : 
+                 directUpiInput ? `to ${directUpiInput}` : ''}
               </p>
               
               <motion.button
                 whileTap={{ scale: 0.97 }}
-                onClick={() => setPaymentComplete(false)}
-                className="w-full btn-primary rounded-xl"
+                onClick={handlePaymentComplete}
+                className="w-full btn-primary rounded-xl py-3 h-12 text-base"
               >
                 Done
               </motion.button>

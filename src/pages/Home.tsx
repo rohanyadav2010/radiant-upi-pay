@@ -1,14 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import BalanceCard from '../components/BalanceCard';
+import BalanceCard, { getGlobalBalance, setGlobalBalance, formatIndianCurrency } from '../components/BalanceCard';
 import ActionButton from '../components/ActionButton';
 import TransactionCard from '../components/TransactionCard';
 import ScanModal from '../components/ScanModal';
 import ContactsModal from '../components/ContactsModal';
 import { Send, Smartphone, Users, QrCode, RefreshCw } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { Input } from '@/components/ui/input';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -16,9 +17,11 @@ const Home = () => {
   const [scanModalOpen, setScanModalOpen] = useState(false);
   const [scanType, setScanType] = useState<'qr' | 'mobile'>('qr');
   const [contactsModalOpen, setContactsModalOpen] = useState(false);
-
-  // Simulate recent transactions data
-  const recentTransactions = [
+  const [mobileInputOpen, setMobileInputOpen] = useState(false);
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [greeting, setGreeting] = useState('Good Morning');
+  const [balance, setBalance] = useState(() => getGlobalBalance());
+  const [recentTransactions, setRecentTransactions] = useState([
     { 
       id: 1, 
       name: 'Rahul Sharma', 
@@ -47,7 +50,21 @@ const Home = () => {
       date: '22 Jun, 9:45 AM', 
       type: 'sent' as const 
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    // Get current time in India (IST is UTC+5:30)
+    const now = new Date();
+    const hour = now.getHours();
+    
+    if (hour < 12) {
+      setGreeting('Good Morning');
+    } else if (hour < 17) {
+      setGreeting('Good Afternoon');
+    } else {
+      setGreeting('Good Evening');
+    }
+  }, []);
 
   // Create container and item variants for staggered animations
   const containerVariants = {
@@ -83,8 +100,27 @@ const Home = () => {
   };
 
   const handleScanMobile = () => {
-    setScanType('mobile');
-    setScanModalOpen(true);
+    setMobileInputOpen(true);
+  };
+
+  const handleMobileInputSubmit = () => {
+    if (mobileNumber.length === 10) {
+      // Redirect to pay page with the mobile number
+      navigate('/pay', { 
+        state: { 
+          directUpiInput: `${mobileNumber}@upi`,
+          directNameInput: `User (${mobileNumber})`,
+          showDirectInput: true
+        } 
+      });
+      setMobileInputOpen(false);
+      setMobileNumber('');
+    } else {
+      toast({
+        title: "Invalid mobile number",
+        description: "Please enter a valid 10-digit mobile number"
+      });
+    }
   };
 
   const handleOpenContacts = () => {
@@ -97,6 +133,9 @@ const Home = () => {
       description: "Updating your recent transactions"
     });
     
+    // Update balance with global value
+    setBalance(getGlobalBalance());
+    
     // Simulate refresh delay
     setTimeout(() => {
       toast({
@@ -104,6 +143,10 @@ const Home = () => {
         description: "Your transactions are up to date"
       });
     }, 1500);
+  };
+
+  const handleBalanceChange = (newBalance: number) => {
+    setBalance(newBalance);
   };
 
   return (
@@ -116,7 +159,7 @@ const Home = () => {
             transition={{ delay: 0.1 }}
             className="text-gray-500 text-sm"
           >
-            Good Morning
+            {greeting}
           </motion.p>
           <motion.h1 
             initial={{ opacity: 0, y: -10 }}
@@ -124,7 +167,7 @@ const Home = () => {
             transition={{ delay: 0.2 }}
             className="text-xl font-bold"
           >
-            Aditya Singh
+            Kunal Yadav
           </motion.h1>
         </div>
         <motion.div
@@ -133,11 +176,14 @@ const Home = () => {
           transition={{ delay: 0.3 }}
           className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold"
         >
-          AS
+          KY
         </motion.div>
       </div>
 
-      <BalanceCard balance="₹24,500.75" />
+      <BalanceCard 
+        balance={formatIndianCurrency(balance)} 
+        onBalanceChange={handleBalanceChange}
+      />
 
       <motion.div
         variants={containerVariants}
@@ -210,6 +256,49 @@ const Home = () => {
             onClose={() => setScanModalOpen(false)} 
             scanType={scanType}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Modal for Mobile Input */}
+      <AnimatePresence>
+        {mobileInputOpen && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl p-5 m-4 w-full max-w-sm"
+            >
+              <h3 className="font-bold text-xl mb-4 dark:text-white">Enter Mobile Number</h3>
+              <Input
+                type="tel"
+                maxLength={10}
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="10-digit mobile number"
+                className="mb-6 text-lg"
+              />
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => {
+                    setMobileInputOpen(false);
+                    setMobileNumber('');
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 font-medium"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleMobileInputSubmit}
+                  className="flex-1 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium"
+                  disabled={mobileNumber.length !== 10}
+                >
+                  Continue
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
