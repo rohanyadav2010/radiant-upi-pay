@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ServiceCardProps {
   title: string;
-  icon: React.ReactNode;
+  icon: React.ReactElement; // Changed from React.ReactNode to React.ReactElement
   onClick: () => void;
   path?: string;
 }

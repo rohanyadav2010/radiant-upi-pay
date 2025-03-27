@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -43,13 +42,11 @@ const Home = () => {
   const [currentService, setCurrentService] = useState({ title: '', icon: <></> });
 
   useEffect(() => {
-    // Check if user is logged in
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     if (!isLoggedIn) {
       navigate('/login');
     }
     
-    // Get current time in India (IST is UTC+5:30)
     const now = new Date();
     now.setHours(now.getHours() + 5);
     now.setMinutes(now.getMinutes() + 30);
@@ -63,7 +60,6 @@ const Home = () => {
       setGreeting('Good Evening');
     }
     
-    // Refresh balance periodically
     const interval = setInterval(() => {
       setBalance(getGlobalBalance());
     }, 2000);
@@ -71,7 +67,6 @@ const Home = () => {
     return () => clearInterval(interval);
   }, [navigate]);
 
-  // Create container and item variants for staggered animations
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -110,7 +105,6 @@ const Home = () => {
 
   const handleMobileInputSubmit = () => {
     if (mobileNumber.length === 10) {
-      // Redirect to pay page with the mobile number
       navigate('/pay', { 
         state: { 
           directUpiInput: `${mobileNumber}@upi`,
@@ -136,7 +130,7 @@ const Home = () => {
     setBalance(newBalance);
   };
   
-  const handleServiceClick = (serviceTitle: string, serviceIcon: React.ReactNode) => {
+  const handleServiceClick = (serviceTitle: string, serviceIcon: React.ReactElement) => {
     setCurrentService({ title: serviceTitle, icon: serviceIcon });
     setServiceModalOpen(true);
   };
@@ -159,12 +153,10 @@ const Home = () => {
       return;
     }
 
-    // Deduct amount from balance
     const newBalance = balance - amount;
     setGlobalBalance(newBalance);
     setBalance(newBalance);
 
-    // Add to transaction history
     addTransaction(
       currentService.title,
       "service@paypay",
@@ -172,13 +164,11 @@ const Home = () => {
       'sent'
     );
 
-    // Show success message
     toast({
       title: "Payment Successful",
       description: `${formatIndianCurrency(amount)} paid for ${currentService.title}`
     });
 
-    // Reset modal
     setServiceModalOpen(false);
     setServiceAmount('');
   };
@@ -294,7 +284,6 @@ const Home = () => {
         </motion.div>
       </div>
 
-      {/* Modal for QR/Mobile scanning */}
       <AnimatePresence>
         {scanModalOpen && (
           <ScanModal 
@@ -305,7 +294,6 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      {/* Modal for Mobile Input */}
       <AnimatePresence>
         {mobileInputOpen && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -348,7 +336,6 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      {/* Modal for Contacts */}
       <AnimatePresence>
         {contactsModalOpen && (
           <ContactsModal 
@@ -358,7 +345,6 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      {/* Modal for Service Payment */}
       <AnimatePresence>
         {serviceModalOpen && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
