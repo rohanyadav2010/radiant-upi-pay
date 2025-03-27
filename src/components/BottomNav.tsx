@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Wallet, BarChart3, Settings, QrCode } from 'lucide-react';
+import { Home, Wallet, BarChart3, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const BottomNav = () => {
@@ -15,7 +15,7 @@ const BottomNav = () => {
     },
     { 
       to: '/pay', 
-      icon: <QrCode size={22} />, 
+      icon: <Wallet size={22} />, 
       label: 'Pay',
       isMiddle: true
     },

@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Plus, ArrowDownLeft } from 'lucide-react';
+import { Eye, EyeOff, Plus, ArrowDownLeft, User } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { addTransaction } from '@/store/TransactionStore';
 
 interface BalanceCardProps {
   balance: string;
@@ -27,6 +28,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
   const [showAddMoneyModal, setShowAddMoneyModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [amountInput, setAmountInput] = useState('');
+  const [senderName, setSenderName] = useState('');
   const { toast } = useToast();
   
   const handleAddMoney = () => {
@@ -56,6 +58,14 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
       onBalanceChange(newBalance);
     }
     
+    // Add to transaction history
+    addTransaction(
+      senderName || "Bank Transfer", 
+      "bank@upi", 
+      formatIndianCurrency(amount),
+      'received'
+    );
+    
     // Show success message
     toast({
       title: "Money Added",
@@ -64,6 +74,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
     
     // Reset state
     setAmountInput('');
+    setSenderName('');
     setShowAddMoneyModal(false);
   };
   
@@ -94,6 +105,14 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
       onBalanceChange(newBalance);
     }
     
+    // Add to transaction history
+    addTransaction(
+      "Bank Withdrawal", 
+      "bank@upi", 
+      formatIndianCurrency(amount),
+      'sent'
+    );
+    
     // Show success message
     toast({
       title: "Withdrawal Successful",
@@ -109,6 +128,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
     setShowAddMoneyModal(false);
     setShowWithdrawModal(false);
     setAmountInput('');
+    setSenderName('');
   };
   
   return (
@@ -155,15 +175,44 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
       {/* Add Money Modal */}
       {showAddMoneyModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 m-4 w-full max-w-sm">
-            <h3 className="font-bold text-xl mb-4 dark:text-white">Add Money</h3>
-            <input
-              type="number"
-              value={amountInput}
-              onChange={(e) => setAmountInput(e.target.value)}
-              placeholder="Enter amount"
-              className="w-full text-center text-2xl font-bold py-4 bg-transparent border-b border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none transition-colors dark:text-white mb-6"
-            />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 m-4 w-full max-w-sm"
+          >
+            <div className="flex items-center justify-center mb-4">
+              <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
+            </div>
+            <h3 className="font-bold text-xl mb-2 dark:text-white text-center">Add Money</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-center mb-4">Enter amount to add to your PayPal account</p>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sender Name (Optional)</label>
+              <input
+                type="text"
+                value={senderName}
+                onChange={(e) => setSenderName(e.target.value)}
+                placeholder="Enter sender name"
+                className="w-full py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              />
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-3 text-gray-500 dark:text-gray-400 text-lg">₹</span>
+                <input
+                  type="number"
+                  value={amountInput}
+                  onChange={(e) => setAmountInput(e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-8 py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-lg font-bold"
+                />
+              </div>
+            </div>
+            
             <div className="flex gap-3">
               <button 
                 onClick={closeModal}
@@ -178,22 +227,40 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
                 Add
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
       
       {/* Withdraw Money Modal */}
       {showWithdrawModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 m-4 w-full max-w-sm">
-            <h3 className="font-bold text-xl mb-4 dark:text-white">Withdraw Money</h3>
-            <input
-              type="number"
-              value={amountInput}
-              onChange={(e) => setAmountInput(e.target.value)}
-              placeholder="Enter amount"
-              className="w-full text-center text-2xl font-bold py-4 bg-transparent border-b border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none transition-colors dark:text-white mb-6"
-            />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 m-4 w-full max-w-sm"
+          >
+            <div className="flex items-center justify-center mb-4">
+              <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
+            </div>
+            <h3 className="font-bold text-xl mb-2 dark:text-white text-center">Withdraw Money</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-center mb-4">Enter amount to withdraw from your PayPal account</p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-3 text-gray-500 dark:text-gray-400 text-lg">₹</span>
+                <input
+                  type="number"
+                  value={amountInput}
+                  onChange={(e) => setAmountInput(e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-8 py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-lg font-bold"
+                />
+              </div>
+            </div>
+            
             <div className="flex gap-3">
               <button 
                 onClick={closeModal}
@@ -208,7 +275,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
                 Withdraw
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </motion.div>

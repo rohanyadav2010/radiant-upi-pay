@@ -4,10 +4,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import BalanceCard, { getGlobalBalance, setGlobalBalance, formatIndianCurrency } from '../components/BalanceCard';
 import ActionButton from '../components/ActionButton';
-import TransactionCard from '../components/TransactionCard';
 import ScanModal from '../components/ScanModal';
 import ContactsModal from '../components/ContactsModal';
-import { Send, Smartphone, Users, QrCode, RefreshCw } from 'lucide-react';
+import ServiceCard from '../components/ServiceCard';
+import { 
+  Send, 
+  Smartphone, 
+  Users, 
+  QrCode, 
+  Zap, 
+  Receipt, 
+  CreditCard, 
+  ShoppingCart, 
+  Shield, 
+  DollarSign, 
+  Utensils, 
+  Gift, 
+  Users2, 
+  FileText, 
+  Ticket
+} from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Input } from '@/components/ui/input';
 
@@ -21,40 +37,18 @@ const Home = () => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [greeting, setGreeting] = useState('Good Morning');
   const [balance, setBalance] = useState(() => getGlobalBalance());
-  const [recentTransactions, setRecentTransactions] = useState([
-    { 
-      id: 1, 
-      name: 'Rahul Sharma', 
-      amount: '₹2,500', 
-      date: 'Today, 2:30 PM', 
-      type: 'sent' as const 
-    },
-    { 
-      id: 2, 
-      name: 'Grocery Store', 
-      amount: '₹750', 
-      date: 'Yesterday, 6:15 PM', 
-      type: 'sent' as const 
-    },
-    { 
-      id: 3, 
-      name: 'Priya M', 
-      amount: '₹3,000', 
-      date: 'Yesterday, 11:30 AM', 
-      type: 'received' as const 
-    },
-    { 
-      id: 4, 
-      name: 'Electric Bill', 
-      amount: '₹1,200', 
-      date: '22 Jun, 9:45 AM', 
-      type: 'sent' as const 
-    }
-  ]);
 
   useEffect(() => {
+    // Check if user is logged in
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (!isLoggedIn) {
+      navigate('/login');
+    }
+    
     // Get current time in India (IST is UTC+5:30)
     const now = new Date();
+    now.setHours(now.getHours() + 5);
+    now.setMinutes(now.getMinutes() + 30);
     const hour = now.getHours();
     
     if (hour < 12) {
@@ -64,7 +58,14 @@ const Home = () => {
     } else {
       setGreeting('Good Evening');
     }
-  }, []);
+    
+    // Refresh balance periodically
+    const interval = setInterval(() => {
+      setBalance(getGlobalBalance());
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [navigate]);
 
   // Create container and item variants for staggered animations
   const containerVariants = {
@@ -127,27 +128,31 @@ const Home = () => {
     setContactsModalOpen(true);
   };
 
-  const handleRefresh = () => {
-    toast({
-      title: "Refreshing...",
-      description: "Updating your recent transactions"
-    });
-    
-    // Update balance with global value
-    setBalance(getGlobalBalance());
-    
-    // Simulate refresh delay
-    setTimeout(() => {
-      toast({
-        title: "Refreshed",
-        description: "Your transactions are up to date"
-      });
-    }, 1500);
-  };
-
   const handleBalanceChange = (newBalance: number) => {
     setBalance(newBalance);
   };
+  
+  const handleServiceClick = (serviceTitle: string) => {
+    toast({
+      title: serviceTitle,
+      description: "This feature will be available soon"
+    });
+  };
+  
+  const services = [
+    { title: 'Electricity Bill', icon: <Zap size={24} />, onClick: () => handleServiceClick('Electricity Bill') },
+    { title: 'Mobile Recharge', icon: <Smartphone size={24} />, onClick: () => handleServiceClick('Mobile Recharge') },
+    { title: 'Bill Payments', icon: <Receipt size={24} />, onClick: () => handleServiceClick('Bill Payments') },
+    { title: 'Credit Card', icon: <CreditCard size={24} />, onClick: () => handleServiceClick('Credit Card') },
+    { title: 'Shopping', icon: <ShoppingCart size={24} />, onClick: () => handleServiceClick('Shopping') },
+    { title: 'Insurance', icon: <Shield size={24} />, onClick: () => handleServiceClick('Insurance') },
+    { title: 'Investments', icon: <DollarSign size={24} />, onClick: () => handleServiceClick('Investments') },
+    { title: 'Food Delivery', icon: <Utensils size={24} />, onClick: () => handleServiceClick('Food Delivery') },
+    { title: 'Rewards', icon: <Gift size={24} />, onClick: () => handleServiceClick('Rewards') },
+    { title: 'Tickets', icon: <Ticket size={24} />, onClick: () => handleServiceClick('Tickets') },
+    { title: 'Split Bills', icon: <Users2 size={24} />, onClick: () => handleServiceClick('Split Bills') },
+    { title: 'Tax Services', icon: <FileText size={24} />, onClick: () => handleServiceClick('Tax Services') }
+  ];
 
   return (
     <div className="section pt-8">
@@ -178,6 +183,10 @@ const Home = () => {
         >
           KY
         </motion.div>
+      </div>
+
+      <div className="flex justify-center mb-4">
+        <img src="/paypal-logo.png" alt="PayPal" className="h-6" />
       </div>
 
       <BalanceCard 
@@ -221,32 +230,25 @@ const Home = () => {
         </motion.div>
       </motion.div>
 
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-bold text-base">Recent Transactions</h2>
-        <button 
-          className="text-primary text-sm font-medium flex items-center"
-          onClick={handleRefresh}
+      <div className="mb-4">
+        <h2 className="font-bold text-base mb-4">Services</h2>
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-4 gap-3"
         >
-          <RefreshCw size={14} className="mr-1" /> Refresh
-        </button>
+          {services.map((service, index) => (
+            <motion.div key={service.title} variants={itemVariants}>
+              <ServiceCard 
+                title={service.title}
+                icon={service.icon}
+                onClick={service.onClick}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
-
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {recentTransactions.map((transaction) => (
-          <motion.div key={transaction.id} variants={itemVariants}>
-            <TransactionCard 
-              name={transaction.name}
-              amount={transaction.amount}
-              date={transaction.date}
-              type={transaction.type}
-            />
-          </motion.div>
-        ))}
-      </motion.div>
 
       {/* Modal for QR/Mobile scanning */}
       <AnimatePresence>

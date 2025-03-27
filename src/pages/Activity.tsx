@@ -20,7 +20,16 @@ const Activity = () => {
     };
     
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    
+    // Also refresh every 2 seconds to catch changes from other components
+    const interval = setInterval(() => {
+      setTransactions(getTransactions());
+    }, 2000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
   
   // Filter transactions based on active filter
@@ -112,6 +121,10 @@ const Activity = () => {
             </div>
           </div>
         </motion.div>
+      </div>
+
+      <div className="mb-4">
+        <h2 className="font-bold text-base mb-4 dark:text-white">Transactions</h2>
       </div>
 
       <motion.div

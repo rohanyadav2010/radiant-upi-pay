@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -25,9 +26,11 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [expandedSetting, setExpandedSetting] = useState<string | null>(null);
   
   const containerVariants = {
@@ -125,12 +128,23 @@ const Settings = () => {
       title: "Logging out",
       description: "You have been logged out successfully"
     });
+    
+    // Remove login info
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('username');
+    
+    // Redirect to login page
+    navigate('/login');
   };
 
   return (
     <div className="section pt-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold">Settings</h1>
+      </div>
+
+      <div className="flex items-center justify-center mb-4">
+        <img src="/paypal-logo.png" alt="PayPal" className="h-6" />
       </div>
 
       <div className="flex items-center mb-8">

@@ -30,6 +30,13 @@ const Pay = () => {
   const [contacts, setContacts] = useState<{id: number, name: string, upiId: string}[]>([]);
 
   useEffect(() => {
+    // Check if user is logged in
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    
     // Load contacts from store
     setContacts(getContacts());
     
@@ -55,7 +62,7 @@ const Pay = () => {
         setShowDirectInput(true);
       }
     }
-  }, [location.state]);
+  }, [location.state, navigate, toast]);
 
   const processPayment = () => {
     if (!paymentAmount) return;
@@ -99,7 +106,7 @@ const Pay = () => {
       
       // Show payment complete modal
       setPaymentComplete(true);
-      // No auto-close timer here since we want the user to press Done
+      // No auto-close timer here - user must press Done button
     }, 1500);
   };
 
@@ -176,6 +183,10 @@ const Pay = () => {
     <div className="section pt-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold dark:text-white">Pay</h1>
+      </div>
+      
+      <div className="flex justify-center mb-4">
+        <img src="/paypal-logo.png" alt="PayPal" className="h-6" />
       </div>
 
       <motion.div
@@ -317,7 +328,7 @@ const Pay = () => {
         </div>
       </div>
 
-      {/* Use the new ScanModal component */}
+      {/* Use the ScanModal component */}
       <AnimatePresence>
         {scanActive && (
           <ScanModal
@@ -329,6 +340,7 @@ const Pay = () => {
         )}
       </AnimatePresence>
 
+      {/* UPI PIN Input Modal */}
       <AnimatePresence>
         {showPinInput && (
           <motion.div
@@ -355,6 +367,7 @@ const Pay = () => {
         )}
       </AnimatePresence>
 
+      {/* Payment Success Modal */}
       <AnimatePresence>
         {paymentComplete && (
           <motion.div
@@ -369,33 +382,43 @@ const Pay = () => {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-white dark:bg-gray-800 rounded-2xl p-5 m-4 w-full max-w-sm text-center"
+              className="bg-white dark:bg-gray-800 rounded-2xl p-6 m-4 w-full max-w-sm text-center"
             >
+              <div className="flex justify-center mb-2">
+                <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
+              </div>
+              
               <div className="mb-6 flex justify-center">
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
+                  transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.3 }}
+                  className="w-24 h-24 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4"
                 >
-                  <CheckCircle2 size={50} className="text-green-500 dark:text-green-400" />
+                  <CheckCircle2 size={60} className="text-green-500 dark:text-green-400" />
                 </motion.div>
               </div>
               
-              <h3 className="font-bold text-xl mb-2 dark:text-white">Payment Successful!</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-2 text-lg font-semibold">
+              <h3 className="font-bold text-2xl mb-2 dark:text-white">Payment Successful!</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-3 text-xl font-semibold">
                 {formatIndianCurrency(parseInt(paymentAmount))}
               </p>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">
-                {selectedContact ? `to ${selectedContact.name}` : 
-                 directNameInput ? `to ${directNameInput}` : 
-                 directUpiInput ? `to ${directUpiInput}` : ''}
-              </p>
+              
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 mb-6">
+                <p className="text-gray-600 dark:text-gray-300 font-medium">
+                  {selectedContact ? `To: ${selectedContact.name}` : 
+                  directNameInput ? `To: ${directNameInput}` : 
+                  directUpiInput ? `To: ${directUpiInput}` : ''}
+                </p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  Transaction ID: {Math.random().toString(36).substring(2, 10).toUpperCase()}
+                </p>
+              </div>
               
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handlePaymentComplete}
-                className="w-full btn-primary rounded-xl py-3 h-12 text-base"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl py-4 font-medium text-base"
               >
                 Done
               </motion.button>
