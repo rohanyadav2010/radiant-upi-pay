@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -18,7 +17,7 @@ import {
   Clock,
   Wallet,
   CreditCardIcon,
-  Bank,
+  Building,
   BellRing,
   BellOff,
   MessageSquare,
@@ -31,7 +30,6 @@ const Settings = () => {
   const { toast } = useToast();
   const [expandedSetting, setExpandedSetting] = useState<string | null>(null);
   
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -84,7 +82,7 @@ const Settings = () => {
       details: [
         { icon: <Wallet size={16} />, label: 'UPI', value: '9876543210@upi' },
         { icon: <CreditCardIcon size={16} />, label: 'Credit/Debit Cards', value: '3 Cards' },
-        { icon: <Bank size={16} />, label: 'Bank Accounts', value: '2 Accounts' },
+        { icon: <Building size={16} />, label: 'Bank Accounts', value: '2 Accounts' },
         { icon: <ArrowUpRight size={16} />, label: 'Add New Method', value: '+' }
       ]
     },
