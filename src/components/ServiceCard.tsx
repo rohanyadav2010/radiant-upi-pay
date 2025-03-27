@@ -1,20 +1,41 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LucideIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast";
 
 interface ServiceCardProps {
   title: string;
   icon: React.ReactNode;
   onClick: () => void;
+  path?: string;
 }
 
-const ServiceCard: React.FC<ServiceCardProps> = ({ title, icon, onClick }) => {
+const ServiceCard: React.FC<ServiceCardProps> = ({ title, icon, onClick, path }) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleClick = () => {
+    if (path) {
+      navigate(path);
+    } else {
+      // Show a toast with more detailed info instead of "Coming soon"
+      toast({
+        title: `${title} Service`,
+        description: `You've selected the ${title} service. Processing your request...`,
+        duration: 3000,
+      });
+      
+      // Call the provided onClick function
+      onClick();
+    }
+  };
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
       whileTap={{ scale: 0.95 }}
-      onClick={onClick}
+      onClick={handleClick}
       className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center hover-lift cursor-pointer"
     >
       <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-2 text-blue-500 dark:text-blue-400">

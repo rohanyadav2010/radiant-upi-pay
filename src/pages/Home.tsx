@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Input } from '@/components/ui/input';
+import { addTransaction } from '@/store/TransactionStore';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -37,6 +38,9 @@ const Home = () => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [greeting, setGreeting] = useState('Good Morning');
   const [balance, setBalance] = useState(() => getGlobalBalance());
+  const [serviceAmount, setServiceAmount] = useState('');
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [currentService, setCurrentService] = useState({ title: '', icon: <></> });
 
   useEffect(() => {
     // Check if user is logged in
@@ -132,26 +136,66 @@ const Home = () => {
     setBalance(newBalance);
   };
   
-  const handleServiceClick = (serviceTitle: string) => {
+  const handleServiceClick = (serviceTitle: string, serviceIcon: React.ReactNode) => {
+    setCurrentService({ title: serviceTitle, icon: serviceIcon });
+    setServiceModalOpen(true);
+  };
+
+  const handleServicePayment = () => {
+    const amount = parseInt(serviceAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount greater than 0"
+      });
+      return;
+    }
+
+    if (amount > balance) {
+      toast({
+        title: "Insufficient balance",
+        description: "You don't have enough balance to make this payment"
+      });
+      return;
+    }
+
+    // Deduct amount from balance
+    const newBalance = balance - amount;
+    setGlobalBalance(newBalance);
+    setBalance(newBalance);
+
+    // Add to transaction history
+    addTransaction(
+      currentService.title,
+      "service@paypay",
+      formatIndianCurrency(amount),
+      'sent'
+    );
+
+    // Show success message
     toast({
-      title: serviceTitle,
-      description: "This feature will be available soon"
+      title: "Payment Successful",
+      description: `${formatIndianCurrency(amount)} paid for ${currentService.title}`
     });
+
+    // Reset modal
+    setServiceModalOpen(false);
+    setServiceAmount('');
   };
   
   const services = [
-    { title: 'Electricity Bill', icon: <Zap size={24} />, onClick: () => handleServiceClick('Electricity Bill') },
-    { title: 'Mobile Recharge', icon: <Smartphone size={24} />, onClick: () => handleServiceClick('Mobile Recharge') },
-    { title: 'Bill Payments', icon: <Receipt size={24} />, onClick: () => handleServiceClick('Bill Payments') },
-    { title: 'Credit Card', icon: <CreditCard size={24} />, onClick: () => handleServiceClick('Credit Card') },
-    { title: 'Shopping', icon: <ShoppingCart size={24} />, onClick: () => handleServiceClick('Shopping') },
-    { title: 'Insurance', icon: <Shield size={24} />, onClick: () => handleServiceClick('Insurance') },
-    { title: 'Investments', icon: <DollarSign size={24} />, onClick: () => handleServiceClick('Investments') },
-    { title: 'Food Delivery', icon: <Utensils size={24} />, onClick: () => handleServiceClick('Food Delivery') },
-    { title: 'Rewards', icon: <Gift size={24} />, onClick: () => handleServiceClick('Rewards') },
-    { title: 'Tickets', icon: <Ticket size={24} />, onClick: () => handleServiceClick('Tickets') },
-    { title: 'Split Bills', icon: <Users2 size={24} />, onClick: () => handleServiceClick('Split Bills') },
-    { title: 'Tax Services', icon: <FileText size={24} />, onClick: () => handleServiceClick('Tax Services') }
+    { title: 'Electricity Bill', icon: <Zap size={24} />, onClick: () => handleServiceClick('Electricity Bill', <Zap size={24} />) },
+    { title: 'Mobile Recharge', icon: <Smartphone size={24} />, onClick: () => handleServiceClick('Mobile Recharge', <Smartphone size={24} />) },
+    { title: 'Bill Payments', icon: <Receipt size={24} />, onClick: () => handleServiceClick('Bill Payments', <Receipt size={24} />) },
+    { title: 'Credit Card', icon: <CreditCard size={24} />, onClick: () => handleServiceClick('Credit Card', <CreditCard size={24} />) },
+    { title: 'Shopping', icon: <ShoppingCart size={24} />, onClick: () => handleServiceClick('Shopping', <ShoppingCart size={24} />) },
+    { title: 'Insurance', icon: <Shield size={24} />, onClick: () => handleServiceClick('Insurance', <Shield size={24} />) },
+    { title: 'Investments', icon: <DollarSign size={24} />, onClick: () => handleServiceClick('Investments', <DollarSign size={24} />) },
+    { title: 'Food Delivery', icon: <Utensils size={24} />, onClick: () => handleServiceClick('Food Delivery', <Utensils size={24} />) },
+    { title: 'Rewards', icon: <Gift size={24} />, onClick: () => handleServiceClick('Rewards', <Gift size={24} />) },
+    { title: 'Tickets', icon: <Ticket size={24} />, onClick: () => handleServiceClick('Tickets', <Ticket size={24} />) },
+    { title: 'Split Bills', icon: <Users2 size={24} />, onClick: () => handleServiceClick('Split Bills', <Users2 size={24} />) },
+    { title: 'Tax Services', icon: <FileText size={24} />, onClick: () => handleServiceClick('Tax Services', <FileText size={24} />) }
   ];
 
   return (
@@ -186,7 +230,7 @@ const Home = () => {
       </div>
 
       <div className="flex justify-center mb-4">
-        <img src="/paypal-logo.png" alt="PayPal" className="h-6" />
+        <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
       </div>
 
       <BalanceCard 
@@ -311,6 +355,66 @@ const Home = () => {
             isOpen={contactsModalOpen} 
             onClose={() => setContactsModalOpen(false)} 
           />
+        )}
+      </AnimatePresence>
+
+      {/* Modal for Service Payment */}
+      <AnimatePresence>
+        {serviceModalOpen && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl p-6 m-4 w-full max-w-sm"
+            >
+              <div className="flex justify-center mb-4">
+                <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
+              </div>
+              
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-2 text-blue-500 dark:text-blue-400">
+                  {currentService.icon}
+                </div>
+              </div>
+              
+              <h3 className="font-bold text-xl mb-2 dark:text-white text-center">{currentService.title}</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-center mb-4">Enter amount to pay</p>
+              
+              <div className="mb-6">
+                <div className="relative">
+                  <span className="absolute left-4 top-3 text-gray-500 dark:text-gray-400 text-lg">₹</span>
+                  <input
+                    type="number"
+                    value={serviceAmount}
+                    onChange={(e) => setServiceAmount(e.target.value)}
+                    placeholder="0"
+                    className="w-full pl-8 py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-lg font-bold"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => {
+                    setServiceModalOpen(false);
+                    setServiceAmount('');
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 font-medium"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleServicePayment}
+                  className="flex-1 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium"
+                  disabled={!serviceAmount || parseInt(serviceAmount) <= 0}
+                >
+                  Pay
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
