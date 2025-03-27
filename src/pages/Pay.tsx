@@ -10,6 +10,7 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { addTransaction, getContacts } from '@/store/TransactionStore';
+import ScanModal from '../components/ScanModal';
 
 const Pay = () => {
   const location = useLocation();
@@ -18,6 +19,7 @@ const Pay = () => {
   const { theme, setTheme } = useTheme();
   
   const [scanActive, setScanActive] = useState(false);
+  const [scanType, setScanType] = useState<'qr' | 'mobile'>('qr');
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -94,6 +96,29 @@ const Pay = () => {
       return;
     }
     setShowPinInput(true);
+  };
+
+  const handleScanSuccess = (result: string) => {
+    // For QR code scanning, we assume the result is a UPI ID
+    // For mobile number scanning, we assume the result is a phone number
+    if (scanType === 'qr') {
+      setDirectUpiInput(result);
+      setShowDirectInput(true);
+      
+      toast({
+        title: "QR Scanned Successfully",
+        description: `UPI ID: ${result}`
+      });
+    } else {
+      setDirectNameInput(`User (${result})`);
+      setDirectUpiInput(`${result}@upi`);
+      setShowDirectInput(true);
+      
+      toast({
+        title: "Mobile Number Scanned",
+        description: `Number: ${result}`
+      });
+    }
   };
 
   const overlayVariants = {
@@ -216,7 +241,10 @@ const Pay = () => {
 
           <motion.button
             whileTap={{ scale: 0.97 }}
-            onClick={() => setScanActive(true)}
+            onClick={() => {
+              setScanType('qr');
+              setScanActive(true);
+            }}
             className="w-full btn-primary rounded-xl mb-3 flex items-center justify-center"
           >
             <Scan size={18} className="mr-2" /> Scan QR Code
@@ -264,43 +292,15 @@ const Pay = () => {
         </div>
       </div>
 
+      {/* Use the new ScanModal component */}
       <AnimatePresence>
         {scanActive && (
-          <motion.div
-            variants={overlayVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center"
-            onClick={() => setScanActive(false)}
-          >
-            <motion.div
-              variants={scannerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="bg-white rounded-2xl p-5 m-4 w-full max-w-sm"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold">Scan QR Code</h3>
-                <button onClick={() => setScanActive(false)}>
-                  <X size={20} />
-                </button>
-              </div>
-              
-              <div className="bg-gray-100 rounded-xl aspect-square flex items-center justify-center mb-4">
-                <div className="text-center text-gray-500">
-                  <p>Camera placeholder</p>
-                  <p className="text-xs mt-2">Point your camera at a QR code</p>
-                </div>
-              </div>
-              
-              <p className="text-sm text-gray-500 text-center">
-                Position the QR code within the frame to scan
-              </p>
-            </motion.div>
-          </motion.div>
+          <ScanModal
+            isOpen={scanActive}
+            onClose={() => setScanActive(false)}
+            scanType={scanType}
+            onScanSuccess={handleScanSuccess}
+          />
         )}
       </AnimatePresence>
 
