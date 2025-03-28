@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scan, X, CheckCircle2, Plus, User } from 'lucide-react';
@@ -342,14 +343,14 @@ const Pay = () => {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           >
             <motion.div
               variants={scannerVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm m-4"
+              className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm mx-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <UpiPinInput
@@ -368,14 +369,14 @@ const Pay = () => {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           >
             <motion.div
               variants={scannerVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-white dark:bg-gray-800 rounded-2xl p-6 m-4 w-full max-w-sm text-center"
+              className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-sm mx-auto text-center"
             >
               <div className="flex justify-center mb-2">
                 <img src="/phonepe-logo.png" alt="PhonePe" className="h-8" />

@@ -10,6 +10,7 @@ interface UpiPinInputProps {
 
 const UpiPinInput: React.FC<UpiPinInputProps> = ({ onSubmit, onCancel }) => {
   const [pin, setPin] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -36,7 +37,12 @@ const UpiPinInput: React.FC<UpiPinInputProps> = ({ onSubmit, onCancel }) => {
   
   const handleSubmit = () => {
     if (pin.length === 4) {
-      onSubmit(pin);
+      setIsLoading(true);
+      // Add a delay to simulate processing
+      setTimeout(() => {
+        onSubmit(pin);
+        setIsLoading(false);
+      }, 1500);
     }
   };
   
@@ -65,6 +71,7 @@ const UpiPinInput: React.FC<UpiPinInputProps> = ({ onSubmit, onCancel }) => {
               onChange={(e) => handleChange(e, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               className="w-14 h-14 text-center text-xl font-bold bg-white dark:bg-gray-700 border-2 border-purple-100 dark:border-purple-800 rounded-xl focus:border-purple-500 dark:focus:border-purple-500 focus:outline-none transition-all"
+              disabled={isLoading}
             />
             {pin[index] && (
               <motion.div 
@@ -83,19 +90,25 @@ const UpiPinInput: React.FC<UpiPinInputProps> = ({ onSubmit, onCancel }) => {
         <button 
           onClick={onCancel}
           className="flex-1 py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 font-medium"
+          disabled={isLoading}
         >
           Cancel
         </button>
         <button 
           onClick={handleSubmit}
-          disabled={pin.length !== 4}
+          disabled={pin.length !== 4 || isLoading}
           className={`flex-1 py-3 px-4 rounded-xl font-medium ${
-            pin.length === 4 
+            pin.length === 4 && !isLoading
               ? 'bg-purple-600 text-white' 
               : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
           }`}
         >
-          Confirm
+          {isLoading ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+              Processing...
+            </div>
+          ) : 'Confirm'}
         </button>
       </div>
     </div>
