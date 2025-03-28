@@ -1,21 +1,21 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Plus, ArrowDownLeft, User } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { addTransaction } from '@/store/TransactionStore';
+import { addTransaction, saveGlobalBalance, loadGlobalBalance } from '@/store/TransactionStore';
 
 interface BalanceCardProps {
   balance: string;
   onBalanceChange?: (newBalance: number) => void;
 }
 
-// Create a global variable to store balance
-let globalBalance = 225925; // ₹2,25,925
+// Create a variable to store balance, initialized from localStorage
+let globalBalance = loadGlobalBalance();
 
 export const getGlobalBalance = () => globalBalance;
 export const setGlobalBalance = (newBalance: number) => {
   globalBalance = newBalance;
+  saveGlobalBalance(newBalance); // Save to localStorage
 };
 
 // Helper function to format currency with commas (Indian style)

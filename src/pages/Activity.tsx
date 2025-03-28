@@ -15,19 +15,19 @@ const Activity = () => {
     setTransactions(getTransactions());
     
     // Set up a listener to refresh transactions when localStorage changes
-    const handleStorageChange = () => {
+    const handleTransactionsChange = () => {
       setTransactions(getTransactions());
     };
     
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('storage:transactions', handleTransactionsChange);
     
-    // Also refresh every 2 seconds to catch changes from other components
+    // Also refresh every second to catch changes from other components
     const interval = setInterval(() => {
       setTransactions(getTransactions());
-    }, 2000);
+    }, 1000);
     
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('storage:transactions', handleTransactionsChange);
       clearInterval(interval);
     };
   }, []);

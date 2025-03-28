@@ -37,6 +37,8 @@ const loadTransactions = (): TransactionData[] => {
 // Save transactions to localStorage
 const saveTransactions = (transactions: TransactionData[]): void => {
   localStorage.setItem('transactions', JSON.stringify(transactions));
+  // Dispatch an event to notify other components
+  window.dispatchEvent(new Event('storage:transactions'));
 };
 
 // Load contacts from localStorage
@@ -48,6 +50,21 @@ const loadContacts = (): Contact[] => {
 // Save contacts to localStorage
 const saveContacts = (contacts: Contact[]): void => {
   localStorage.setItem('contacts', JSON.stringify(contacts));
+  // Dispatch an event to notify other components
+  window.dispatchEvent(new Event('storage:contacts'));
+};
+
+// Save global balance to localStorage
+export const saveGlobalBalance = (balance: number): void => {
+  localStorage.setItem('globalBalance', balance.toString());
+  // Dispatch an event to notify other components
+  window.dispatchEvent(new Event('storage:balance'));
+};
+
+// Load global balance from localStorage
+export const loadGlobalBalance = (): number => {
+  const stored = localStorage.getItem('globalBalance');
+  return stored ? parseInt(stored) : 225925; // Default balance
 };
 
 // Add a new transaction

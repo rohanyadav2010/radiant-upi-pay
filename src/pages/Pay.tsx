@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scan, X, CheckCircle2, Plus, User } from 'lucide-react';
@@ -30,15 +29,19 @@ const Pay = () => {
   const [contacts, setContacts] = useState<{id: number, name: string, upiId: string}[]>([]);
 
   useEffect(() => {
-    // Check if user is logged in
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     if (!isLoggedIn) {
       navigate('/login');
       return;
     }
     
-    // Load contacts from store
     setContacts(getContacts());
+    
+    const handleContactsChange = () => {
+      setContacts(getContacts());
+    };
+    
+    window.addEventListener('storage:contacts', handleContactsChange);
     
     if (location.state?.contactName && location.state?.upiId) {
       setSelectedContact({
@@ -52,7 +55,6 @@ const Pay = () => {
       });
     }
     
-    // Handle direct UPI input if passed from another component
     if (location.state?.directUpiInput) {
       setDirectUpiInput(location.state.directUpiInput);
       if (location.state?.directNameInput) {
@@ -62,6 +64,10 @@ const Pay = () => {
         setShowDirectInput(true);
       }
     }
+    
+    return () => {
+      window.removeEventListener('storage:contacts', handleContactsChange);
+    };
   }, [location.state, navigate, toast]);
 
   const processPayment = () => {
@@ -76,7 +82,6 @@ const Pay = () => {
     setTimeout(() => {
       setIsProcessing(false);
       
-      // Deduct the amount from the balance
       const amount = parseInt(paymentAmount);
       if (!isNaN(amount)) {
         const currentBalance = getGlobalBalance();
@@ -92,21 +97,17 @@ const Pay = () => {
       }
       
       if (selectedContact) {
-        // Save transaction with selected contact
         addTransaction(
           selectedContact.name, 
           selectedContact.upiId, 
           paymentAmount
         );
       } else if (showDirectInput && directUpiInput) {
-        // Save transaction with direct UPI input
         const name = directNameInput || directUpiInput;
         addTransaction(name, directUpiInput, paymentAmount);
       }
       
-      // Show payment complete modal
       setPaymentComplete(true);
-      // No auto-close timer here - user must press Done button
     }, 1500);
   };
 
@@ -122,8 +123,6 @@ const Pay = () => {
   };
 
   const handleScanSuccess = (result: string) => {
-    // For QR code scanning, we assume the result is a UPI ID
-    // For mobile number scanning, we assume the result is a phone number
     if (scanType === 'qr') {
       setDirectUpiInput(result);
       setShowDirectInput(true);
@@ -172,10 +171,8 @@ const Pay = () => {
     setDirectNameInput('');
     setShowDirectInput(false);
     
-    // Refresh contacts after transaction
     setContacts(getContacts());
     
-    // Navigate back to home
     navigate('/');
   };
 
@@ -186,7 +183,7 @@ const Pay = () => {
       </div>
       
       <div className="flex justify-center mb-4">
-        <img src="/paypal-logo.png" alt="PayPal" className="h-6" />
+        <img src="/phonepe-logo.png" alt="PhonePe" className="h-6" />
       </div>
 
       <motion.div
@@ -255,7 +252,6 @@ const Pay = () => {
               type="text"
               value={paymentAmount}
               onChange={(e) => {
-                // Only allow numbers and validate format
                 const value = e.target.value.replace(/[^0-9]/g, '');
                 setPaymentAmount(value ? `${value}` : '');
               }}
@@ -328,7 +324,6 @@ const Pay = () => {
         </div>
       </div>
 
-      {/* Use the ScanModal component */}
       <AnimatePresence>
         {scanActive && (
           <ScanModal
@@ -340,7 +335,6 @@ const Pay = () => {
         )}
       </AnimatePresence>
 
-      {/* UPI PIN Input Modal */}
       <AnimatePresence>
         {showPinInput && (
           <motion.div
@@ -367,7 +361,6 @@ const Pay = () => {
         )}
       </AnimatePresence>
 
-      {/* Payment Success Modal */}
       <AnimatePresence>
         {paymentComplete && (
           <motion.div
@@ -385,7 +378,7 @@ const Pay = () => {
               className="bg-white dark:bg-gray-800 rounded-2xl p-6 m-4 w-full max-w-sm text-center"
             >
               <div className="flex justify-center mb-2">
-                <img src="/paypal-logo.png" alt="PayPal" className="h-8" />
+                <img src="/phonepe-logo.png" alt="PhonePe" className="h-8" />
               </div>
               
               <div className="mb-6 flex justify-center">

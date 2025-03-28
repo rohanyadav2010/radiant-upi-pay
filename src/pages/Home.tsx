@@ -60,11 +60,20 @@ const Home = () => {
       setGreeting('Good Evening');
     }
     
+    const handleBalanceChange = () => {
+      setBalance(getGlobalBalance());
+    };
+    
+    window.addEventListener('storage:balance', handleBalanceChange);
+    
     const interval = setInterval(() => {
       setBalance(getGlobalBalance());
-    }, 2000);
+    }, 1000);
     
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener('storage:balance', handleBalanceChange);
+      clearInterval(interval);
+    };
   }, [navigate]);
 
   const containerVariants = {
@@ -159,7 +168,7 @@ const Home = () => {
 
     addTransaction(
       currentService.title,
-      "service@paypay",
+      "service@phonepe",
       formatIndianCurrency(amount),
       'sent'
     );
