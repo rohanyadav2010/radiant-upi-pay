@@ -1,7 +1,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Camera, ScanLine } from 'lucide-react';
+import { X, Camera, ScanLine, QrCode } from 'lucide-react';
+import jsQR from 'jsqr';
 
 interface ScanModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const ScanModal: React.FC<ScanModalProps> = ({
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean>(false);
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [scanning, setScanning] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scanIntervalRef = useRef<number | null>(null);
@@ -38,7 +40,11 @@ const ScanModal: React.FC<ScanModalProps> = ({
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' }
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
       });
       
       setHasCameraPermission(true);
@@ -47,14 +53,24 @@ const ScanModal: React.FC<ScanModalProps> = ({
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Start scanning after camera is initialized
-        setTimeout(() => {
-          startScanning();
-        }, 1000);
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play()
+              .then(() => {
+                // Start scanning after camera is initialized and playing
+                setScanning(true);
+                startScanning();
+              })
+              .catch(err => {
+                console.error("Error playing video:", err);
+                setError("Failed to start video: " + err.message);
+              });
+          }
+        };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error accessing camera:', err);
-      setError('Could not access camera. Please check permissions.');
+      setError(`Could not access camera: ${err.message || 'Please check permissions.'}`);
       setHasCameraPermission(false);
       setIsCameraActive(false);
     }
@@ -74,6 +90,7 @@ const ScanModal: React.FC<ScanModalProps> = ({
     }
     
     setIsCameraActive(false);
+    setScanning(false);
   };
 
   const startScanning = () => {
@@ -81,12 +98,12 @@ const ScanModal: React.FC<ScanModalProps> = ({
     
     const canvas = canvasRef.current;
     const video = videoRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     
     if (!ctx) return;
     
     scanIntervalRef.current = window.setInterval(() => {
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      if (video.readyState === video.HAVE_ENOUGH_DATA && scanning) {
         // Set canvas dimensions to match video
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -94,35 +111,41 @@ const ScanModal: React.FC<ScanModalProps> = ({
         // Draw video frame to canvas
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Here you would integrate a QR code scanning library
-        // For demonstration, we'll simulate a scan after 3 seconds
-        simulateQrScan();
-      }
-    }, 500);
-  };
-  
-  const simulateQrScan = () => {
-    // In a real implementation, you would use a library like jsQR to scan the canvas
-    // For now, we'll simulate a successful scan after a short delay
-    if (isOpen && isCameraActive) {
-      setTimeout(() => {
-        const fakeQrResult = scanType === 'qr' 
-          ? 'user@paytm'
-          : '9876543210';
+        // Get image data for QR code scanning
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Try to find QR code in the image
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+        
+        if (code) {
+          console.log("QR Code detected:", code.data);
           
-        if (onScanSuccess) {
-          onScanSuccess(fakeQrResult);
-          stopCamera();
-          onClose();
+          // For mobile number scanning, we should verify if it's a number
+          if (scanType === 'mobile') {
+            // Simple validation for mobile numbers (adjust as needed)
+            const mobileRegex = /^[0-9]{10,12}$/;
+            if (mobileRegex.test(code.data)) {
+              if (onScanSuccess) {
+                setScanning(false);
+                onScanSuccess(code.data);
+                stopCamera();
+                onClose();
+              }
+            }
+          } else {
+            // For QR codes, accept any data
+            if (onScanSuccess) {
+              setScanning(false);
+              onScanSuccess(code.data);
+              stopCamera();
+              onClose();
+            }
+          }
         }
-      }, 3000); // Simulate scan after 3 seconds
-      
-      // Clear the interval to prevent multiple simulated scans
-      if (scanIntervalRef.current) {
-        clearInterval(scanIntervalRef.current);
-        scanIntervalRef.current = null;
       }
-    }
+    }, 200); // Scan every 200ms for better performance
   };
 
   if (!isOpen) return null;
