@@ -182,6 +182,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-sm mx-auto"
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-center mb-4">
               <img src="/phonepe-logo.png" alt="PhonePe" className="h-10" />
@@ -241,6 +242,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-sm mx-auto"
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-center mb-4">
               <img src="/phonepe-logo.png" alt="PhonePe" className="h-10" />
