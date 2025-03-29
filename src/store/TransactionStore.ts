@@ -1,5 +1,6 @@
 
 // We'll use a simple store pattern with localStorage for persistence
+// In a real production app, this would integrate with a backend API
 
 export interface TransactionData {
   id: number;
@@ -8,6 +9,7 @@ export interface TransactionData {
   amount: string;
   date: string;
   type: 'sent' | 'received';
+  synced?: boolean;
 }
 
 export interface Contact {
@@ -15,6 +17,7 @@ export interface Contact {
   name: string;
   upiId: string;
   lastTransaction?: string;
+  synced?: boolean;
 }
 
 // Helper to get a formatted date string
@@ -81,7 +84,8 @@ export const addTransaction = (
     upiId,
     amount: amount.startsWith('₹') ? amount : `₹${amount}`,
     date: getFormattedDate(),
-    type
+    type,
+    synced: false // Mark as not synced with server yet
   };
   
   transactions.unshift(newTransaction); // Add to beginning of array
@@ -99,13 +103,15 @@ export const addOrUpdateContact = (name: string, upiId: string): void => {
   if (existingContactIndex >= 0) {
     // Update existing contact
     contacts[existingContactIndex].lastTransaction = getFormattedDate();
+    contacts[existingContactIndex].synced = false; // Mark as not synced
   } else {
     // Add new contact
     contacts.push({
       id: Date.now(),
       name,
       upiId,
-      lastTransaction: getFormattedDate()
+      lastTransaction: getFormattedDate(),
+      synced: false // Mark as not synced
     });
   }
   
@@ -127,4 +133,26 @@ export const getTransactions = (): TransactionData[] => {
 // Get all contacts
 export const getContacts = (): Contact[] => {
   return loadContacts();
+};
+
+// Mark items as synced
+export const markAsSynced = (type: 'transactions' | 'contacts'): void => {
+  if (type === 'transactions') {
+    const transactions = loadTransactions();
+    const updatedTransactions = transactions.map(t => ({ ...t, synced: true }));
+    saveTransactions(updatedTransactions);
+  } else {
+    const contacts = loadContacts();
+    const updatedContacts = contacts.map(c => ({ ...c, synced: true }));
+    saveContacts(updatedContacts);
+  }
+};
+
+// Get items that need to be synced
+export const getUnsynced = (type: 'transactions' | 'contacts'): (TransactionData | Contact)[] => {
+  if (type === 'transactions') {
+    return loadTransactions().filter(t => !t.synced);
+  } else {
+    return loadContacts().filter(c => !c.synced);
+  }
 };
