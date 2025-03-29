@@ -12,6 +12,15 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+// Define interface for sync data
+interface SyncData {
+  transactions?: any[];
+  contacts?: any[];
+  balance?: number;
+  deviceId?: string;
+  lastSynced?: Date | null | string;
+}
+
 // Mock data responses for offline development
 const mockResponses = {
   transactions: [],
@@ -30,10 +39,10 @@ async function fetchWithAuth<T>(
     console.log('🔄 Mock API mode enabled, simulating server response');
     
     // Extract request data for mock handling
-    let requestData = {};
+    let requestData: SyncData = {};
     if (options.body) {
       try {
-        requestData = JSON.parse(options.body as string);
+        requestData = JSON.parse(options.body as string) as SyncData;
       } catch (e) {
         // Silently ignore parsing errors
       }
@@ -49,9 +58,9 @@ async function fetchWithAuth<T>(
       return { 
         success: true, 
         data: {
-          transactions: requestData.hasOwnProperty('transactions') ? requestData.transactions : mockResponses.transactions,
-          contacts: requestData.hasOwnProperty('contacts') ? requestData.contacts : mockResponses.contacts,
-          balance: requestData.hasOwnProperty('balance') ? requestData.balance : mockResponses.balance,
+          transactions: requestData.transactions ?? mockResponses.transactions,
+          contacts: requestData.contacts ?? mockResponses.contacts,
+          balance: requestData.balance ?? mockResponses.balance,
           lastSynced: new Date().toISOString()
         } as T
       };
