@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ThemeToggle } from './theme-toggle';
 import { useSyncContext } from '@/store/SyncContext';
-import { Loader2, CloudSync } from 'lucide-react';
+import { Loader2, CloudCog } from 'lucide-react';
 
 const AppLayout = () => {
   const location = useLocation();
@@ -55,7 +55,7 @@ const AppLayout = () => {
           {isSyncing ? (
             <Loader2 size={16} className="animate-spin" />
           ) : (
-            <CloudSync size={16} />
+            <CloudCog size={16} />
           )}
           <span className="hidden sm:inline">
             {lastSynced ? `Last synced: ${new Date(lastSynced).toLocaleTimeString()}` : 'Sync now'}
