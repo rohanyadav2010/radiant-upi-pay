@@ -30,20 +30,22 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
         damping: 30,
         mass: 1
       }}
-      className="card-subtle flex items-center justify-between mb-3 hover:shadow-md transition-all duration-300"
+      className="flex items-center justify-between mb-3 hover:shadow-md transition-all duration-300 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4"
     >
       <div className="flex items-center">
         <motion.div 
           className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
-            type === 'sent' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'
+            type === 'sent' 
+              ? 'bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400' 
+              : 'bg-green-100 dark:bg-green-900/30 text-green-500 dark:text-green-400'
           }`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           {type === 'sent' ? (
-            <ArrowUpRight className="text-red-500" size={18} />
+            <ArrowUpRight size={18} />
           ) : (
-            <ArrowDownLeft className="text-green-500" size={18} />
+            <ArrowDownLeft size={18} />
           )}
         </motion.div>
         <div>
@@ -52,7 +54,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
         </div>
       </div>
       <p className={`font-semibold ${
-        type === 'sent' ? 'text-red-500' : 'text-green-500'
+        type === 'sent' 
+          ? 'text-red-500 dark:text-red-400' 
+          : 'text-green-500 dark:text-green-400'
       }`}>
         {type === 'sent' ? '-' : '+'}{amount}
       </p>
