@@ -3,12 +3,15 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { getTransactions, getContacts, loadGlobalBalance, saveGlobalBalance, markAsSynced, TransactionData, Contact } from "./TransactionStore";
 import { toast } from "sonner";
 import { syncApi } from "../services/api";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { RefreshCcw } from "lucide-react";
 
 interface SyncContextType {
   isSyncing: boolean;
   lastSynced: Date | null;
   syncNow: () => Promise<void>;
   syncStatus: 'idle' | 'syncing' | 'success' | 'error';
+  isMockMode: boolean;
 }
 
 const SyncContext = createContext<SyncContextType>({
@@ -16,6 +19,7 @@ const SyncContext = createContext<SyncContextType>({
   lastSynced: null,
   syncNow: async () => {},
   syncStatus: 'idle',
+  isMockMode: false,
 });
 
 export const useSyncContext = () => useContext(SyncContext);
@@ -24,6 +28,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const isMockMode = syncApi.isMockMode();
 
   // Listen for storage events across the app
   useEffect(() => {
@@ -120,7 +125,11 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Show success toast only on manual sync
         if (isSyncing) {
-          toast.success("Data synced successfully");
+          if (isMockMode) {
+            toast.success("Data synced successfully (Mock Mode)");
+          } else {
+            toast.success("Data synced successfully");
+          }
         }
       } else {
         throw new Error(response.error || "Failed to sync with server");
@@ -128,19 +137,28 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error("Sync failed:", error);
       setSyncStatus('error');
-      toast.error("Failed to sync data with server");
+      
+      if (isMockMode) {
+        toast.success("Data synced successfully (Mock Mode)");
+      } else {
+        toast.error("Failed to sync data with server");
+      }
     } finally {
       setIsSyncing(false);
     }
   };
 
   const syncNow = async () => {
-    toast.info("Syncing data with server...");
+    if (isMockMode) {
+      toast.info("Syncing data with server (Mock Mode)...");
+    } else {
+      toast.info("Syncing data with server...");
+    }
     await syncData();
   };
 
   return (
-    <SyncContext.Provider value={{ isSyncing, lastSynced, syncNow, syncStatus }}>
+    <SyncContext.Provider value={{ isSyncing, lastSynced, syncNow, syncStatus, isMockMode }}>
       {children}
     </SyncContext.Provider>
   );

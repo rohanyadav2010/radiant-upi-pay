@@ -10,7 +10,7 @@ import { Loader2, CloudCog } from 'lucide-react';
 
 const AppLayout = () => {
   const location = useLocation();
-  const { isSyncing, syncNow, syncStatus, lastSynced } = useSyncContext();
+  const { isSyncing, syncNow, syncStatus, lastSynced, isMockMode } = useSyncContext();
   
   const pageVariants = {
     initial: { 
@@ -60,6 +60,11 @@ const AppLayout = () => {
           <span className="hidden sm:inline">
             {lastSynced ? `Last synced: ${new Date(lastSynced).toLocaleTimeString()}` : 'Sync now'}
           </span>
+          {isMockMode && (
+            <span className="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-300">
+              Mock
+            </span>
+          )}
         </motion.button>
         
         <ThemeToggle />
