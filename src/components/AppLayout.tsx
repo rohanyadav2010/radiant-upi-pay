@@ -43,7 +43,7 @@ const AppLayout = () => {
     <div className="app-container relative overflow-hidden">
       {/* Premium gradient background with animated subtle movement */}
       <motion.div 
-        className="absolute inset-0 -z-10"
+        className="fixed inset-0 -z-10"
         animate={{ 
           backgroundPosition: ['0% 0%', '100% 100%'],
         }}
@@ -58,9 +58,9 @@ const AppLayout = () => {
           backgroundSize: '200% 200%',
         }}
       />
-      <div className="absolute inset-0 -z-5 backdrop-blur-[100px] dark:bg-black/80 dark:backdrop-blur-xl" />
+      <div className="fixed inset-0 -z-5 backdrop-blur-[100px] dark:bg-black/80 dark:backdrop-blur-xl" />
       
-      <div className="flex justify-between items-center p-4">
+      <div className="sticky top-0 z-10 flex justify-between items-center p-4 bg-white/30 dark:bg-gray-900/30 backdrop-blur-lg border-b border-white/10 dark:border-gray-800/30">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -93,7 +93,7 @@ const AppLayout = () => {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="h-[calc(100vh-5rem)] overflow-y-auto scroll-area pb-20"
+          className="min-h-[calc(100vh-10rem)] overflow-y-auto scroll-area pb-20"
         >
           <Outlet />
         </motion.div>

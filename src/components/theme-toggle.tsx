@@ -18,7 +18,7 @@ export function ThemeToggle() {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="relative w-9 h-9 rounded-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-md border border-white/10 dark:border-gray-700/50 shadow-sm"
+          className="relative w-9 h-9 rounded-full bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-white/20 dark:border-gray-700/50 shadow-sm"
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.div 
@@ -42,24 +42,24 @@ export function ThemeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="rounded-xl overflow-hidden border border-gray-100/50 dark:border-gray-800/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg">
+      <DropdownMenuContent align="end" className="rounded-xl overflow-hidden border border-gray-100/50 dark:border-gray-800/50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-lg">
         <DropdownMenuItem 
           onClick={() => setTheme("light")}
-          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/80"
+          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50/90 dark:hover:bg-gray-800/90"
         >
           <Sun className="h-4 w-4 text-amber-500" />
           <span>Light</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("dark")}
-          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/80"
+          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50/90 dark:hover:bg-gray-800/90"
         >
           <Moon className="h-4 w-4 text-blue-300" />
           <span>Dark</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("system")}
-          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/80"
+          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50/90 dark:hover:bg-gray-800/90"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-computer">
             <rect width="14" height="8" x="5" y="2" rx="2" />
