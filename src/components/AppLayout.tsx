@@ -41,14 +41,30 @@ const AppLayout = () => {
   
   return (
     <div className="app-container relative overflow-hidden">
-      {/* Dynamic background that works better with dark mode */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-950 -z-10"></div>
+      {/* Premium gradient background with animated subtle movement */}
+      <motion.div 
+        className="absolute inset-0 -z-10"
+        animate={{ 
+          backgroundPosition: ['0% 0%', '100% 100%'],
+        }}
+        transition={{ 
+          duration: 20, 
+          ease: "linear", 
+          repeat: Infinity, 
+          repeatType: "reverse" 
+        }}
+        style={{
+          background: 'linear-gradient(135deg, rgba(247,249,255,1) 0%, rgba(229,240,254,1) 35%, rgba(238,242,255,1) 70%, rgba(231,245,255,1) 100%)',
+          backgroundSize: '200% 200%',
+        }}
+      />
+      <div className="absolute inset-0 -z-5 backdrop-blur-[100px] dark:bg-black/80 dark:backdrop-blur-xl" />
       
       <div className="flex justify-between items-center p-4">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400"
+          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg px-2.5 py-1.5 rounded-full shadow-sm"
           onClick={syncNow}
           disabled={isSyncing}
         >

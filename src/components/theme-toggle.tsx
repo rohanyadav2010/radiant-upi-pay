@@ -15,8 +15,12 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <AnimatePresence mode="wait">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative w-9 h-9 rounded-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-md border border-white/10 dark:border-gray-700/50 shadow-sm"
+        >
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div 
               key={theme === "light" ? "light-icon" : "dark-icon"}
               initial={{ scale: 0.5, opacity: 0, rotate: -30 }}
@@ -27,10 +31,10 @@ export function ThemeToggle() {
                 stiffness: 300, 
                 damping: 20 
               }}
-              className="absolute"
+              className="absolute inset-0 flex items-center justify-center"
             >
               {theme === "light" ? 
-                <Sun className="h-[1.2rem] w-[1.2rem] text-yellow-500" /> : 
+                <Sun className="h-[1.2rem] w-[1.2rem] text-amber-500" /> : 
                 <Moon className="h-[1.2rem] w-[1.2rem] text-blue-300" />
               }
             </motion.div>
@@ -38,24 +42,24 @@ export function ThemeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="rounded-xl overflow-hidden">
+      <DropdownMenuContent align="end" className="rounded-xl overflow-hidden border border-gray-100/50 dark:border-gray-800/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg">
         <DropdownMenuItem 
           onClick={() => setTheme("light")}
-          className="flex items-center gap-2 cursor-pointer"
+          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/80"
         >
-          <Sun className="h-4 w-4 text-yellow-500" />
+          <Sun className="h-4 w-4 text-amber-500" />
           <span>Light</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("dark")}
-          className="flex items-center gap-2 cursor-pointer"
+          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/80"
         >
           <Moon className="h-4 w-4 text-blue-300" />
           <span>Dark</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("system")}
-          className="flex items-center gap-2 cursor-pointer"
+          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/80"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-computer">
             <rect width="14" height="8" x="5" y="2" rx="2" />
