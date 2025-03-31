@@ -39,19 +39,14 @@ const ScanModal: React.FC<ScanModalProps> = ({
 
   const startCamera = async () => {
     try {
-      console.log("Starting camera...");
-      const constraints = { 
+      const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: 'environment',
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }
-      };
+      });
       
-      console.log("Requesting user media with constraints:", constraints);
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
-      console.log("Camera stream obtained:", stream.active, stream.id);
       setHasCameraPermission(true);
       setIsCameraActive(true);
       setError(null);
@@ -59,11 +54,9 @@ const ScanModal: React.FC<ScanModalProps> = ({
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
-          console.log("Video metadata loaded");
           if (videoRef.current) {
             videoRef.current.play()
               .then(() => {
-                console.log("Video playing successfully");
                 // Start scanning after camera is initialized and playing
                 setScanning(true);
                 startScanning();
@@ -84,19 +77,14 @@ const ScanModal: React.FC<ScanModalProps> = ({
   };
 
   const stopCamera = () => {
-    console.log("Stopping camera...");
     if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
       const tracks = stream.getTracks();
-      tracks.forEach(track => {
-        console.log("Stopping track:", track.kind, track.id);
-        track.stop();
-      });
+      tracks.forEach(track => track.stop());
       videoRef.current.srcObject = null;
     }
     
     if (scanIntervalRef.current) {
-      console.log("Clearing scan interval");
       clearInterval(scanIntervalRef.current);
       scanIntervalRef.current = null;
     }
@@ -106,21 +94,14 @@ const ScanModal: React.FC<ScanModalProps> = ({
   };
 
   const startScanning = () => {
-    if (!canvasRef.current || !videoRef.current) {
-      console.log("Canvas or video ref not available for scanning");
-      return;
-    }
+    if (!canvasRef.current || !videoRef.current) return;
     
     const canvas = canvasRef.current;
     const video = videoRef.current;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     
-    if (!ctx) {
-      console.log("Could not get 2D context");
-      return;
-    }
+    if (!ctx) return;
     
-    console.log("Starting QR code scanning...");
     scanIntervalRef.current = window.setInterval(() => {
       if (video.readyState === video.HAVE_ENOUGH_DATA && scanning) {
         // Set canvas dimensions to match video
@@ -279,7 +260,7 @@ const ScanModal: React.FC<ScanModalProps> = ({
               </div>
               
               {/* Hidden canvas for image processing */}
-              <canvas ref={canvasRef} className="hidden absolute" />
+              <canvas ref={canvasRef} className="hidden" />
             </>
           )}
         </div>

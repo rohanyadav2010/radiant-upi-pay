@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import TransactionCard from '../components/TransactionCard';
@@ -8,33 +9,26 @@ const Activity = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   
   // Load transactions on mount and when they change
   useEffect(() => {
-    const fetchTransactions = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getTransactions();
-        setTransactions(data);
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchTransactions();
+    setTransactions(getTransactions());
     
     // Set up a listener to refresh transactions when localStorage changes
     const handleTransactionsChange = () => {
-      fetchTransactions();
+      setTransactions(getTransactions());
     };
     
     window.addEventListener('storage:transactions', handleTransactionsChange);
     
+    // Also refresh every second to catch changes from other components
+    const interval = setInterval(() => {
+      setTransactions(getTransactions());
+    }, 1000);
+    
     return () => {
       window.removeEventListener('storage:transactions', handleTransactionsChange);
+      clearInterval(interval);
     };
   }, []);
   
@@ -133,37 +127,31 @@ const Activity = () => {
         <h2 className="font-bold text-base mb-4 dark:text-white">Transactions</h2>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-10">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
-        </div>
-      ) : (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {filteredTransactions.length > 0 ? (
-            filteredTransactions.map((transaction) => (
-              <motion.div key={transaction.id} variants={itemVariants}>
-                <TransactionCard 
-                  name={transaction.name}
-                  amount={transaction.amount}
-                  date={transaction.date}
-                  type={transaction.type}
-                />
-              </motion.div>
-            ))
-          ) : (
-            <motion.div 
-              variants={itemVariants}
-              className="text-center py-10"
-            >
-              <p className="text-gray-500 dark:text-gray-400">No transactions found</p>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {filteredTransactions.length > 0 ? (
+          filteredTransactions.map((transaction) => (
+            <motion.div key={transaction.id} variants={itemVariants}>
+              <TransactionCard 
+                name={transaction.name}
+                amount={transaction.amount}
+                date={transaction.date}
+                type={transaction.type}
+              />
             </motion.div>
-          )}
-        </motion.div>
-      )}
+          ))
+        ) : (
+          <motion.div 
+            variants={itemVariants}
+            className="text-center py-10"
+          >
+            <p className="text-gray-500 dark:text-gray-400">No transactions found</p>
+          </motion.div>
+        )}
+      </motion.div>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scan, X, CheckCircle2, Plus, User } from 'lucide-react';
@@ -26,8 +27,7 @@ const Pay = () => {
   const [showDirectInput, setShowDirectInput] = useState(false);
   const [directUpiInput, setDirectUpiInput] = useState('');
   const [directNameInput, setDirectNameInput] = useState('');
-  const [contacts, setContacts] = useState<{id: number | string, name: string, upiId: string}[]>([]);
-  const [isLoadingContacts, setIsLoadingContacts] = useState(true);
+  const [contacts, setContacts] = useState<{id: number, name: string, upiId: string}[]>([]);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
@@ -36,31 +36,10 @@ const Pay = () => {
       return;
     }
     
-    const loadContacts = async () => {
-      setIsLoadingContacts(true);
-      try {
-        const contactsData = await getContacts();
-        setContacts(contactsData);
-      } catch (error) {
-        console.error("Error loading contacts:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load contacts. Using cached data."
-        });
-      } finally {
-        setIsLoadingContacts(false);
-      }
-    };
+    setContacts(getContacts());
     
-    loadContacts();
-    
-    const handleContactsChange = async () => {
-      try {
-        const updatedContacts = await getContacts();
-        setContacts(updatedContacts);
-      } catch (error) {
-        console.error("Error updating contacts:", error);
-      }
+    const handleContactsChange = () => {
+      setContacts(getContacts());
     };
     
     window.addEventListener('storage:contacts', handleContactsChange);
@@ -165,25 +144,6 @@ const Pay = () => {
     }
   };
 
-  const handlePaymentComplete = async () => {
-    setPaymentComplete(false);
-    setPaymentAmount('');
-    setScanActive(false);
-    setSelectedContact(null);
-    setDirectUpiInput('');
-    setDirectNameInput('');
-    setShowDirectInput(false);
-    
-    try {
-      const updatedContacts = await getContacts();
-      setContacts(updatedContacts);
-    } catch (error) {
-      console.error("Error refreshing contacts:", error);
-    }
-    
-    navigate('/');
-  };
-
   const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 }
@@ -201,6 +161,20 @@ const Pay = () => {
       scale: 0.8,
       transition: { duration: 0.2 } 
     }
+  };
+
+  const handlePaymentComplete = () => {
+    setPaymentComplete(false);
+    setPaymentAmount('');
+    setScanActive(false);
+    setSelectedContact(null);
+    setDirectUpiInput('');
+    setDirectNameInput('');
+    setShowDirectInput(false);
+    
+    setContacts(getContacts());
+    
+    navigate('/');
   };
 
   return (
@@ -331,9 +305,7 @@ const Pay = () => {
         <h2 className="font-bold text-base mb-4 dark:text-white">Frequent Contacts</h2>
         
         <div className="space-y-2">
-          {isLoadingContacts ? (
-            <p className="text-center py-3 text-gray-500 dark:text-gray-400">Loading contacts...</p>
-          ) : contacts.length > 0 ? (
+          {contacts.length > 0 ? (
             contacts.map((contact, index) => (
               <motion.div
                 key={contact.id}
