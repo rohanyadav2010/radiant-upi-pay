@@ -36,6 +36,7 @@ const loadFromLocalStorage = (key: string, defaultValue: any): any => {
 
 const saveToLocalStorage = (key: string, data: any): void => {
   localStorage.setItem(key, JSON.stringify(data));
+  // Dispatch an event to notify other components
   window.dispatchEvent(new Event(`storage:${key}`));
 };
 
@@ -44,6 +45,7 @@ export const getTransactions = async (): Promise<TransactionData[]> => {
   const userId = await getCurrentUserId();
   
   if (!userId) {
+    // Fallback to localStorage if not logged in
     return loadFromLocalStorage('transactions', []);
   }
   
@@ -59,13 +61,14 @@ export const getTransactions = async (): Promise<TransactionData[]> => {
       return loadFromLocalStorage('transactions', []);
     }
     
+    // Convert Supabase format to our app format
     const mappedData = data.map((item) => ({
       id: item.id,
       name: item.name,
       upiId: item.upi_id,
       amount: item.amount_formatted,
       date: item.date,
-      type: item.type as "sent" | "received"
+      type: item.type as "sent" | "received" // Type assertion to ensure it matches the expected type
     }));
     
     return mappedData;
@@ -80,6 +83,7 @@ export const getContacts = async (): Promise<Contact[]> => {
   const userId = await getCurrentUserId();
   
   if (!userId) {
+    // Fallback to localStorage if not logged in
     return loadFromLocalStorage('contacts', []);
   }
   
@@ -95,6 +99,7 @@ export const getContacts = async (): Promise<Contact[]> => {
       return loadFromLocalStorage('contacts', []);
     }
     
+    // Convert Supabase format to our app format
     return data.map((record: ContactRecord) => ({
       id: record.id || record.created_at || Date.now(),
       name: record.name,
@@ -112,8 +117,9 @@ export const loadGlobalBalance = async (): Promise<number> => {
   const userId = await getCurrentUserId();
   
   if (!userId) {
+    // Fallback to localStorage if not logged in
     const stored = localStorage.getItem('globalBalance');
-    return stored ? parseInt(stored) : 225925;
+    return stored ? parseInt(stored) : 225925; // Default balance
   }
   
   try {
@@ -139,7 +145,9 @@ export const loadGlobalBalance = async (): Promise<number> => {
 
 // Save global balance
 export const saveGlobalBalance = async (balance: number): Promise<void> => {
+  // Always update localStorage for immediate UI feedback
   localStorage.setItem('globalBalance', balance.toString());
+  // Dispatch an event to notify other components
   window.dispatchEvent(new Event('storage:balance'));
   
   const userId = await getCurrentUserId();
@@ -166,12 +174,15 @@ export const saveGlobalBalance = async (balance: number): Promise<void> => {
 
 // Add or update a contact
 export const addOrUpdateContact = async (name: string, upiId: string): Promise<void> => {
+  // First update localStorage for immediate UI feedback
   const contacts = loadFromLocalStorage('contacts', []);
   const existingContactIndex = contacts.findIndex((c: Contact) => c.upiId === upiId);
   
   if (existingContactIndex >= 0) {
+    // Update existing contact
     contacts[existingContactIndex].lastTransaction = getFormattedDate();
   } else {
+    // Add new contact
     contacts.push({
       id: Date.now(),
       name,
@@ -182,6 +193,7 @@ export const addOrUpdateContact = async (name: string, upiId: string): Promise<v
   
   saveToLocalStorage('contacts', contacts);
   
+  // Then update Supabase if user is logged in
   const userId = await getCurrentUserId();
   if (!userId) return;
   
@@ -213,6 +225,7 @@ export const addTransaction = async (
   amount: string,
   type: 'sent' | 'received' = 'sent'
 ): Promise<void> => {
+  // First update localStorage for immediate UI feedback
   const formattedAmount = amount.startsWith('₹') ? amount : `₹${amount}`;
   const numericAmount = parseInt(amount.replace(/[^0-9]/g, ''));
   
@@ -226,11 +239,13 @@ export const addTransaction = async (
     type
   };
   
-  transactions.unshift(newTransaction);
+  transactions.unshift(newTransaction); // Add to beginning of array
   saveToLocalStorage('transactions', transactions);
   
+  // Also update or add contact
   await addOrUpdateContact(name, upiId);
   
+  // Then update Supabase if user is logged in
   const userId = await getCurrentUserId();
   if (!userId) return;
   
@@ -257,10 +272,12 @@ export const addTransaction = async (
 
 // Remove a contact
 export const removeContact = async (id: number | string): Promise<void> => {
+  // First update localStorage for immediate UI feedback
   const contacts = loadFromLocalStorage('contacts', []);
   const newContacts = contacts.filter((contact: Contact) => contact.id !== id);
   saveToLocalStorage('contacts', newContacts);
   
+  // Then update Supabase if user is logged in
   const userId = await getCurrentUserId();
   if (!userId) return;
   
@@ -281,8 +298,7 @@ export const removeContact = async (id: number | string): Promise<void> => {
 
 // Delete a transaction
 export const deleteTransaction = async (id: string | number): Promise<void> => {
-  const transactionId = id.toString();
-  
+  const transactionId = typeof id === 'number' ? id.toString() : id;
   try {
     const { error } = await supabase
       .from('transactions')
