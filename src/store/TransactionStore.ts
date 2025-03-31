@@ -62,16 +62,14 @@ export const getTransactions = async (): Promise<TransactionData[]> => {
     }
     
     // Convert Supabase format to our app format
-    const mappedData = data.map((item) => ({
-      id: item.id,
-      name: item.name,
-      upiId: item.upi_id,
-      amount: item.amount_formatted,
-      date: item.date,
-      type: item.type as "sent" | "received" // Type assertion to ensure it matches the expected type
+    return data.map((record: TransactionRecord) => ({
+      id: record.id || record.created_at || Date.now(),
+      name: record.name,
+      upiId: record.upi_id,
+      amount: record.amount_formatted,
+      date: record.date,
+      type: record.type
     }));
-    
-    return mappedData;
   } catch (err) {
     console.error('Error in getTransactions:', err);
     return loadFromLocalStorage('transactions', []);
@@ -293,22 +291,5 @@ export const removeContact = async (id: number | string): Promise<void> => {
     }
   } catch (err) {
     console.error('Error in removeContact:', err);
-  }
-};
-
-// Delete a transaction
-export const deleteTransaction = async (id: string | number): Promise<void> => {
-  const transactionId = typeof id === 'number' ? id.toString() : id;
-  try {
-    const { error } = await supabase
-      .from('transactions')
-      .delete()
-      .eq('id', transactionId);
-      
-    if (error) {
-      console.error('Error deleting transaction:', error);
-    }
-  } catch (err) {
-    console.error('Error in deleteTransaction:', err);
   }
 };
