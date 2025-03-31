@@ -171,27 +171,20 @@ const ScanModal: React.FC<ScanModalProps> = ({
 
   const overlayVariants = {
     hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: {
-        duration: 0.3
-      }
-    }
+    visible: { opacity: 1 }
   };
 
   const modalVariants = {
-    hidden: { opacity: 0, scale: 0.8, y: 20 },
+    hidden: { opacity: 0, scale: 0.8 },
     visible: { 
       opacity: 1, 
       scale: 1,
-      y: 0,
-      transition: { type: "spring", stiffness: 400, damping: 30 }
+      transition: { type: "spring", stiffness: 300, damping: 30 }
     },
     exit: { 
       opacity: 0, 
       scale: 0.8,
-      y: 20,
-      transition: { duration: 0.2, ease: "easeInOut" } 
+      transition: { duration: 0.2 } 
     }
   };
 
@@ -228,14 +221,9 @@ const ScanModal: React.FC<ScanModalProps> = ({
           <h3 className="font-bold dark:text-white">
             {scanType === 'qr' ? 'Scan QR Code' : 'Scan Mobile Number'}
           </h3>
-          <motion.button 
-            onClick={onClose} 
-            className="dark:text-gray-300"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
+          <button onClick={onClose} className="dark:text-gray-300">
             <X size={20} />
-          </motion.button>
+          </button>
         </div>
         
         <div className="bg-gray-100 dark:bg-gray-900 rounded-xl aspect-square flex items-center justify-center mb-4 relative overflow-hidden">
@@ -243,27 +231,23 @@ const ScanModal: React.FC<ScanModalProps> = ({
             <div className="text-center text-gray-500 dark:text-gray-400 p-4">
               <Camera className="mx-auto mb-2 text-gray-400" size={48} />
               <p>{error}</p>
-              <motion.button 
+              <button 
                 onClick={startCamera} 
                 className="mt-3 bg-blue-500 text-white px-3 py-1 rounded-lg text-sm"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 Try Again
-              </motion.button>
+              </button>
             </div>
           ) : !hasCameraPermission ? (
             <div className="text-center text-gray-500 dark:text-gray-400">
               <Camera className="mx-auto mb-2 text-gray-400" size={48} />
               <p>Camera access needed</p>
-              <motion.button 
+              <button 
                 onClick={startCamera} 
                 className="mt-3 bg-blue-500 text-white px-3 py-1 rounded-lg text-sm"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 Enable Camera
-              </motion.button>
+              </button>
             </div>
           ) : (
             <>
@@ -278,26 +262,10 @@ const ScanModal: React.FC<ScanModalProps> = ({
               {/* Scanning animation overlay */}
               <div className="absolute inset-0 pointer-events-none">
                 {/* Corner markers */}
-                <motion.div 
-                  className="absolute top-4 left-4 w-16 h-16 border-t-2 border-l-2 border-blue-500"
-                  animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.02, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.5 }}
-                />
-                <motion.div 
-                  className="absolute top-4 right-4 w-16 h-16 border-t-2 border-r-2 border-blue-500"
-                  animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.02, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }}
-                />
-                <motion.div 
-                  className="absolute bottom-4 left-4 w-16 h-16 border-b-2 border-l-2 border-blue-500"
-                  animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.02, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.4 }}
-                />
-                <motion.div 
-                  className="absolute bottom-4 right-4 w-16 h-16 border-b-2 border-r-2 border-blue-500"
-                  animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.02, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.6 }}
-                />
+                <div className="absolute top-4 left-4 w-16 h-16 border-t-2 border-l-2 border-blue-500"></div>
+                <div className="absolute top-4 right-4 w-16 h-16 border-t-2 border-r-2 border-blue-500"></div>
+                <div className="absolute bottom-4 left-4 w-16 h-16 border-b-2 border-l-2 border-blue-500"></div>
+                <div className="absolute bottom-4 right-4 w-16 h-16 border-b-2 border-r-2 border-blue-500"></div>
                 
                 {/* Scan line */}
                 <motion.div 

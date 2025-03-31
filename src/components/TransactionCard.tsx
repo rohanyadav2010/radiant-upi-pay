@@ -20,43 +20,26 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
 }) => {
   return (
     <motion.div 
-      whileHover={{ y: -2, scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 500, 
-        damping: 30,
-        mass: 1
-      }}
-      className="flex items-center justify-between mb-3 hover:shadow-md transition-all duration-300 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4"
+      whileHover={{ y: -2 }}
+      className="card-subtle flex items-center justify-between mb-3 hover-lift"
     >
       <div className="flex items-center">
-        <motion.div 
-          className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
-            type === 'sent' 
-              ? 'bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400' 
-              : 'bg-green-100 dark:bg-green-900/30 text-green-500 dark:text-green-400'
-          }`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
+          type === 'sent' ? 'bg-red-100' : 'bg-green-100'
+        }`}>
           {type === 'sent' ? (
-            <ArrowUpRight size={18} />
+            <ArrowUpRight className="text-red-500" size={18} />
           ) : (
-            <ArrowDownLeft size={18} />
+            <ArrowDownLeft className="text-green-500" size={18} />
           )}
-        </motion.div>
+        </div>
         <div>
-          <p className="font-medium text-sm dark:text-white">{name}</p>
-          <p className="text-gray-500 dark:text-gray-400 text-xs">{date}</p>
+          <p className="font-medium text-sm">{name}</p>
+          <p className="text-gray-500 text-xs">{date}</p>
         </div>
       </div>
       <p className={`font-semibold ${
-        type === 'sent' 
-          ? 'text-red-500 dark:text-red-400' 
-          : 'text-green-500 dark:text-green-400'
+        type === 'sent' ? 'text-red-500' : 'text-green-500'
       }`}>
         {type === 'sent' ? '-' : '+'}{amount}
       </p>
