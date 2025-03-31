@@ -1,10 +1,5 @@
 
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co';
-const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
 
 // Types for our database tables
 export interface TransactionRecord {
@@ -34,6 +29,9 @@ export interface BalanceRecord {
   balance: number;
   updated_at?: string;
 }
+
+// Export the supabase client from our integration
+export const supabase = supabaseClient;
 
 // Helper function to get current user ID
 export const getCurrentUserId = async (): Promise<string | null> => {

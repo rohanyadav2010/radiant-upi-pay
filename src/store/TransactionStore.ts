@@ -1,7 +1,5 @@
-
 // Updated store pattern with Supabase integration
 import { supabase, TransactionRecord, ContactRecord, BalanceRecord, getCurrentUserId } from '../services/supabase';
-import { useToast } from "@/hooks/use-toast";
 
 export interface TransactionData {
   id: number | string;
