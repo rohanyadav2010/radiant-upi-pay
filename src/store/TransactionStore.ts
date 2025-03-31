@@ -298,7 +298,9 @@ export const removeContact = async (id: number | string): Promise<void> => {
 
 // Delete a transaction
 export const deleteTransaction = async (id: string | number): Promise<void> => {
-  const transactionId = typeof id === 'number' ? id.toString() : id;
+  // Convert to string if needed
+  const transactionId = id.toString();
+  
   try {
     const { error } = await supabase
       .from('transactions')
