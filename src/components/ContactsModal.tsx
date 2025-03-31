@@ -1,17 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Phone, Users, Plus, Trash2 } from 'lucide-react';
 import ContactCard from './ContactCard';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useToast } from "@/hooks/use-toast";
-
-interface Contact {
-  id: number;
-  name: string;
-  upiId: string;
-}
+import { getContacts, addOrUpdateContact, removeContact, Contact } from '@/store/TransactionStore';
 
 interface ContactsModalProps {
   isOpen: boolean;
@@ -24,17 +19,47 @@ const ContactsModal: React.FC<ContactsModalProps> = ({ isOpen, onClose }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newContact, setNewContact] = useState({ name: '', upiId: '' });
   const [editMode, setEditMode] = useState(false);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Mock contact data with local state
-  const [contacts, setContacts] = useState<Contact[]>([
-    { id: 1, name: 'Rahul Sharma', upiId: 'rahul@okaxis' },
-    { id: 2, name: 'Priya Mehta', upiId: 'priya@okicici' },
-    { id: 3, name: 'Vikram Singh', upiId: 'vikram@oksbi' },
-    { id: 4, name: 'Neha Patel', upiId: 'neha@okhdfcbank' },
-    { id: 5, name: 'Suresh Kumar', upiId: 'suresh@okicici' },
-    { id: 6, name: 'Deepika Verma', upiId: 'deepika@okpnb' },
-    { id: 7, name: 'Rajesh Gupta', upiId: 'rajesh@oksbi' }
-  ]);
+  // Load contacts from Supabase
+  useEffect(() => {
+    if (isOpen) {
+      const loadContacts = async () => {
+        setIsLoading(true);
+        try {
+          const contactsData = await getContacts();
+          setContacts(contactsData);
+        } catch (error) {
+          console.error("Error loading contacts:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load contacts"
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      loadContacts();
+      
+      // Set up listener to refresh contacts when localStorage changes
+      const handleContactsChange = async () => {
+        try {
+          const updatedContacts = await getContacts();
+          setContacts(updatedContacts);
+        } catch (error) {
+          console.error("Error refreshing contacts:", error);
+        }
+      };
+      
+      window.addEventListener('storage:contacts', handleContactsChange);
+      
+      return () => {
+        window.removeEventListener('storage:contacts', handleContactsChange);
+      };
+    }
+  }, [isOpen, toast]);
 
   // Filter contacts based on search query
   const filteredContacts = contacts.filter(contact => 
@@ -42,7 +67,7 @@ const ContactsModal: React.FC<ContactsModalProps> = ({ isOpen, onClose }) => {
     contact.upiId.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddContact = () => {
+  const handleAddContact = async () => {
     if (!newContact.name || !newContact.upiId) {
       toast({
         title: "Error",
@@ -59,23 +84,47 @@ const ContactsModal: React.FC<ContactsModalProps> = ({ isOpen, onClose }) => {
       return;
     }
     
-    const newId = Math.max(0, ...contacts.map(c => c.id)) + 1;
-    setContacts([...contacts, { ...newContact, id: newId }]);
-    setNewContact({ name: '', upiId: '' });
-    setShowAddForm(false);
-    
-    toast({
-      title: "Success",
-      description: "Contact added successfully"
-    });
+    try {
+      await addOrUpdateContact(newContact.name, newContact.upiId);
+      
+      // Refresh contacts list
+      const updatedContacts = await getContacts();
+      setContacts(updatedContacts);
+      
+      setNewContact({ name: '', upiId: '' });
+      setShowAddForm(false);
+      
+      toast({
+        title: "Success",
+        description: "Contact added successfully"
+      });
+    } catch (error) {
+      console.error("Error adding contact:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add contact"
+      });
+    }
   };
   
-  const handleDeleteContact = (id: number) => {
-    setContacts(contacts.filter(contact => contact.id !== id));
-    toast({
-      title: "Success",
-      description: "Contact removed"
-    });
+  const handleDeleteContact = async (id: number | string) => {
+    try {
+      await removeContact(id);
+      
+      // Update local state to reflect the deletion
+      setContacts(contacts.filter(contact => contact.id !== id));
+      
+      toast({
+        title: "Success",
+        description: "Contact removed"
+      });
+    } catch (error) {
+      console.error("Error removing contact:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove contact"
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -183,7 +232,12 @@ const ContactsModal: React.FC<ContactsModalProps> = ({ isOpen, onClose }) => {
         </AnimatePresence>
         
         <div className="overflow-y-auto flex-1 mb-4">
-          {filteredContacts.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+              <p>Loading contacts...</p>
+            </div>
+          ) : filteredContacts.length > 0 ? (
             filteredContacts.map((contact, index) => (
               <motion.div
                 key={contact.id}

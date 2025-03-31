@@ -9,7 +9,90 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      balances: {
+        Row: {
+          balance: number
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_transaction: string | null
+          name: string
+          upi_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_transaction?: string | null
+          name: string
+          upi_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_transaction?: string | null
+          name?: string
+          upi_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          amount_formatted: string
+          created_at: string | null
+          date: string
+          id: string
+          name: string
+          type: string
+          upi_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          amount_formatted: string
+          created_at?: string | null
+          date: string
+          id?: string
+          name: string
+          type: string
+          upi_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          amount_formatted?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          name?: string
+          type?: string
+          upi_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

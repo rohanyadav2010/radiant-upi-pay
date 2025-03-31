@@ -1,154 +1,181 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from "@/hooks/use-toast";
-import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleLogin = (e: React.FormEvent) => {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // Check if the user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/');
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          navigate('/');
+        }
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+  
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username || !password) {
+    if (!email || !password) {
       toast({
         title: "Error",
-        description: "Please enter both username and password",
+        description: "Please fill in all fields",
+        variant: "destructive",
       });
       return;
     }
     
-    setIsLoading(true);
+    setLoading(true);
     
-    // Simulate API request
-    setTimeout(() => {
-      setIsLoading(false);
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('username', username);
-      
+    try {
+      if (isSignUp) {
+        // Sign up
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Registration successful! Please check your email to verify your account.",
+        });
+      } else {
+        // Sign in
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (error) throw error;
+        
+        navigate('/');
+      }
+    } catch (error: any) {
+      console.error("Authentication error:", error);
       toast({
-        title: "Login Successful",
-        description: "Welcome to PhonePe",
+        title: "Error",
+        description: error.message || "Authentication failed",
+        variant: "destructive",
       });
-      
-      navigate('/');
-    }, 1500);
+    } finally {
+      setLoading(false);
+    }
   };
-
+  
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8"
-      >
-        <div className="text-center mb-8">
-          <img
-            src="/phonepe-logo.png"
-            alt="PhonePe"
-            className="h-16 mx-auto mb-6"
-          />
-          <h2 className="text-2xl font-bold dark:text-white mb-2">Welcome Back</h2>
-          <p className="text-gray-500 dark:text-gray-400">
-            Login to access your PhonePe account
-          </p>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-1 text-sm font-medium">
-              Username or Email
-            </label>
-            <div className="relative">
-              <div className="absolute left-3 top-3 text-gray-400">
-                <User size={18} />
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-800 p-5">
+      <div className="flex-1 flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-8">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                {isSignUp ? "Create an Account" : "Welcome Back"}
+              </h1>
+              <p className="text-gray-500 dark:text-gray-400">
+                {isSignUp 
+                  ? "Sign up to start using PhonePe" 
+                  : "Sign in to access your PhonePe account"}
+              </p>
+            </div>
+            
+            <form onSubmit={handleEmailSignIn} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Email Address
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full"
+                />
               </div>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full py-3 pl-10 pr-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Enter your username or email"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-1 text-sm font-medium">
-              Password
-            </label>
-            <div className="relative">
-              <div className="absolute left-3 top-3 text-gray-400">
-                <Lock size={18} />
+              
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Password
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full"
+                />
               </div>
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full py-3 pl-10 pr-10 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Enter your password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400"
+              
+              <Button 
+                type="submit" 
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                disabled={loading}
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+                {loading ? (
+                  <>
+                    <span className="animate-spin inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
+                    {isSignUp ? "Creating Account..." : "Signing In..."}
+                  </>
+                ) : (
+                  isSignUp ? "Sign Up" : "Sign In"
+                )}
+              </Button>
+            </form>
+            
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {isSignUp 
+                  ? "Already have an account? " 
+                  : "Don't have an account? "}
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-purple-600 hover:text-purple-500 font-medium"
+                >
+                  {isSignUp ? "Sign In" : "Sign Up"}
+                </button>
+              </p>
             </div>
           </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-purple-500 border-gray-300 rounded focus:ring-purple-500"
-              />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-              >
-                Remember me
-              </label>
-            </div>
-            <a
-              href="#"
-              className="text-sm font-medium text-purple-500 hover:text-purple-600"
-            >
-              Forgot password?
-            </a>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full py-3 rounded-xl text-white font-medium ${
-              isLoading
-                ? "bg-purple-400 cursor-not-allowed"
-                : "bg-purple-600 hover:bg-purple-700"
-            }`}
-          >
-            {isLoading ? "Logging in..." : "Log in"}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
-            Don't have an account?{" "}
-            <a href="#" className="text-purple-500 font-medium">
-              Sign up
-            </a>
-          </p>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 };
