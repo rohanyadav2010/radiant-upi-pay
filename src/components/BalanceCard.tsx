@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Plus, ArrowDownLeft, User } from 'lucide-react';
+import { Eye, EyeOff, Plus, ArrowDownLeft } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { addTransaction, saveGlobalBalance, loadGlobalBalance } from '@/store/TransactionStore';
 
@@ -10,13 +10,23 @@ interface BalanceCardProps {
   onBalanceChange?: (newBalance: number) => void;
 }
 
-// Create a variable to store balance, initialized from localStorage
-let globalBalance = loadGlobalBalance();
+// Variable to store balance
+let globalBalance = 225925; // Default value, will be updated from database
+
+// Helper function to initialize the balance
+const initializeBalance = async () => {
+  const balance = await loadGlobalBalance();
+  globalBalance = balance;
+  return balance;
+};
+
+// Initialize balance when module loads
+initializeBalance();
 
 export const getGlobalBalance = () => globalBalance;
-export const setGlobalBalance = (newBalance: number) => {
+export const setGlobalBalance = async (newBalance: number) => {
   globalBalance = newBalance;
-  saveGlobalBalance(newBalance); // Save to localStorage
+  await saveGlobalBalance(newBalance); // Save to Supabase and localStorage
 };
 
 // Helper function to format currency with commas (Indian style)
@@ -30,7 +40,28 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [amountInput, setAmountInput] = useState('');
   const [senderName, setSenderName] = useState('');
+  const [localBalance, setLocalBalance] = useState(getGlobalBalance());
   const { toast } = useToast();
+  
+  useEffect(() => {
+    const loadBalance = async () => {
+      const balance = await loadGlobalBalance();
+      setLocalBalance(balance);
+      globalBalance = balance; // Update the global variable
+    };
+    
+    loadBalance();
+    
+    const handleBalanceChange = () => {
+      setLocalBalance(getGlobalBalance());
+    };
+    
+    window.addEventListener('storage:balance', handleBalanceChange);
+    
+    return () => {
+      window.removeEventListener('storage:balance', handleBalanceChange);
+    };
+  }, []);
   
   const handleAddMoney = () => {
     setShowAddMoneyModal(true);
@@ -40,7 +71,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
     setShowWithdrawModal(true);
   };
   
-  const processAddMoney = () => {
+  const processAddMoney = async () => {
     const amount = parseInt(amountInput);
     if (isNaN(amount) || amount <= 0) {
       toast({
@@ -51,8 +82,9 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
     }
     
     // Update global balance
-    const newBalance = globalBalance + amount;
-    setGlobalBalance(newBalance);
+    const newBalance = localBalance + amount;
+    await setGlobalBalance(newBalance);
+    setLocalBalance(newBalance);
     
     // Notify parent components
     if (onBalanceChange) {
@@ -60,7 +92,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
     }
     
     // Add to transaction history
-    addTransaction(
+    await addTransaction(
       senderName || "Bank Transfer", 
       "bank@upi", 
       formatIndianCurrency(amount),
@@ -79,7 +111,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
     setShowAddMoneyModal(false);
   };
   
-  const processWithdraw = () => {
+  const processWithdraw = async () => {
     const amount = parseInt(amountInput);
     if (isNaN(amount) || amount <= 0) {
       toast({
@@ -89,7 +121,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
       return;
     }
     
-    if (amount > globalBalance) {
+    if (amount > localBalance) {
       toast({
         title: "Insufficient balance",
         description: "You don't have enough balance to withdraw this amount"
@@ -98,8 +130,9 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
     }
     
     // Update global balance
-    const newBalance = globalBalance - amount;
-    setGlobalBalance(newBalance);
+    const newBalance = localBalance - amount;
+    await setGlobalBalance(newBalance);
+    setLocalBalance(newBalance);
     
     // Notify parent components
     if (onBalanceChange) {
@@ -107,7 +140,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
     }
     
     // Add to transaction history
-    addTransaction(
+    await addTransaction(
       "Bank Withdrawal", 
       "bank@upi", 
       formatIndianCurrency(amount),
@@ -151,7 +184,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ balance, onBalanceChange }) =
       
       <div className="flex items-end mb-4">
         <h1 className="text-3xl font-bold mr-2">
-          {showBalance ? formatIndianCurrency(globalBalance) : '••••••'}
+          {showBalance ? formatIndianCurrency(localBalance) : '••••••'}
         </h1>
         <span className="text-gray-500 text-sm mb-1">INR</span>
       </div>
